@@ -1,12 +1,13 @@
 source "https://rubygems.org"
 gemspec
 
-gem "minitest", "~> 5.11"
-gem "minitest-ci", "~> 3.4"
-gem "minitest-reporters", "~> 1.3"
+gem "rspec", "~> 3.1.0"
+gem "solargraph"
+gem "sorbet"
+gem "guard-rspec"
 gem "rake", "~> 13.0"
 gem "rubocop", "1.24.1"
-gem "rubocop-minitest", "0.17.0"
+gem "rubocop-rspec", "2.7.0"
 gem "rubocop-packaging", "0.5.1"
 gem "rubocop-performance", "1.13.1"
 gem "rubocop-rake", "0.6.0"

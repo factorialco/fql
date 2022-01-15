@@ -1,5 +1,5 @@
 require:
-  - rubocop-minitest
+  - rubocop-rspec
   - rubocop-packaging
   - rubocop-performance
   - rubocop-rake
@@ -27,7 +27,7 @@ Layout/SpaceAroundEqualsInParameterDefault:
 Metrics/AbcSize:
   Max: 20
   Exclude:
-    - "test/**/*"
+    - "spec/**/*"
 
 Metrics/BlockLength:
   Exclude:
@@ -36,12 +36,12 @@ Metrics/BlockLength:
 
 Metrics/ClassLength:
   Exclude:
-    - "test/**/*"
+    - "spec/**/*"
 
 Metrics/MethodLength:
   Max: 18
   Exclude:
-    - "test/**/*"
+    - "spec/**/*"
 
 Metrics/ParameterLists:
   Max: 6
