@@ -4,7 +4,8 @@ require 'sorbet-runtime'
 
 loader = Zeitwerk::Loader.for_gem
 loader.inflector.inflect(
-  "fql" => "FQL"
+  "fql" => "FQL",
+  "dsl" => "DSL"
 )
 loader.setup
 

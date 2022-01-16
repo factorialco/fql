@@ -1,8 +1,12 @@
-# typed: false
+# typed: ignore
 require 'spec_helper'
 require 'ostruct'
 
 RSpec.describe FQL::Backend::Ruby do
+  module F
+    extend FQL::Query::DSL
+  end
+
   matcher :compile_to do |expected|
     match do |expression|
       FQL::Backend::Ruby.compile_expression(expression) == expected
@@ -13,20 +17,20 @@ RSpec.describe FQL::Backend::Ruby do
   end
 
   let(:complex_query) do
-    FQL::Query::Or.new(
-      lhs: FQL::Query::Eq.new(
-        lhs: FQL::Query::Attr.new(
-          target: FQL::Query::Rel.new(name: :location),
-          name: :country
+    F.or(
+      F.eq(
+        F.attr(
+          F.rel(:location),
+          :country
         ),
-        rhs: 'es'
+        'es'
       ),
-      rhs: FQL::Query::Gt.new(
-        lhs: FQL::Query::Attr.new(
-          target: FQL::Query::Rel.new(name: :salary),
-          name: :amount
+      F.gt(
+        F.attr(
+          F.rel(:salary),
+          :amount
         ),
-        rhs: FQL::Query::Var.new(name: :threshold)
+        F.var(:threshold)
       )
     )
   end
@@ -62,76 +66,76 @@ RSpec.describe FQL::Backend::Ruby do
 
     describe 'And' do
       it 'compiles to &&' do
-        expect(FQL::Query::And.new(lhs: true, rhs: false)).to compile_to('(true && false)')
+        expect(F.and(true, false)).to compile_to('(true && false)')
       end
     end
 
     describe 'Or' do
       it 'compiles to ||' do
-        expect(FQL::Query::Or.new(lhs: true, rhs: false)).to compile_to('(true || false)')
+        expect(F.or(true, false)).to compile_to('(true || false)')
       end
     end
 
     describe 'Not' do
       it 'compiles to !' do
-        expect(FQL::Query::Not.new(expr: true)).to compile_to('!true')
+        expect(F.not(true)).to compile_to('!true')
       end
     end
 
     describe 'Eq' do
       it 'compiles to ==' do
-        expect(FQL::Query::Eq.new(lhs: true, rhs: false)).to compile_to('(true == false)')
+        expect(F.eq(true, false)).to compile_to('(true == false)')
       end
     end
 
     describe 'Gt' do
       it 'compiles to >' do
-        expect(FQL::Query::Gt.new(lhs: 5, rhs: 2)).to compile_to('(5 > 2)')
+        expect(F.gt(5, 2)).to compile_to('(5 > 2)')
       end
     end
 
     describe 'Gte' do
       it 'compiles to >=' do
-        expect(FQL::Query::Gte.new(lhs: 5, rhs: 2)).to compile_to('(5 >= 2)')
+        expect(F.gte(5, 2)).to compile_to('(5 >= 2)')
       end
     end
 
     describe 'Lt' do
       it 'compiles to <' do
-        expect(FQL::Query::Lt.new(lhs: 5, rhs: 2)).to compile_to('(5 < 2)')
+        expect(F.lt(5, 2)).to compile_to('(5 < 2)')
       end
     end
 
     describe 'Lte' do
       it 'compiles to <=' do
-        expect(FQL::Query::Lte.new(lhs: 5, rhs: 2)).to compile_to('(5 <= 2)')
+        expect(F.lte(5, 2)).to compile_to('(5 <= 2)')
       end
     end
 
     describe 'Rel' do
       context 'when the name refers to self' do
         it 'compiles to the special reference __itself__' do
-          expect(FQL::Query::Rel.new(name: :self)).to compile_to('__itself__')
+          expect(F.rel(:self)).to compile_to('__itself__')
         end
       end
 
       context 'when the name does not refer to self' do
         it 'compiles to its name' do
-          expect(FQL::Query::Rel.new(name: :location)).to compile_to('location')
+          expect(F.rel(:location)).to compile_to('location')
         end
       end
     end
 
     describe 'Attr' do
       it 'compiles to a qualified method call' do
-        expect(FQL::Query::Attr.new(target: FQL::Query::Rel.new(name: :self), name: :property)).to compile_to('__itself__.property')
-        expect(FQL::Query::Attr.new(target: FQL::Query::Rel.new(name: :location), name: :property)).to compile_to('__itself__.location.property')
+        expect(F.attr(F.rel(:self), :property)).to compile_to('__itself__.property')
+        expect(F.attr(F.rel(:location), :property)).to compile_to('__itself__.location.property')
       end
     end
 
     describe 'Var' do
       it 'compiles to a var lookup' do
-        expect(FQL::Query::Var.new(name: :username)).to compile_to('__fql_vars__[:username]')
+        expect(F.var(:username)).to compile_to('__fql_vars__[:username]')
       end
     end
   end
