@@ -61,6 +61,8 @@ RSpec.describe FQL::Backend::Ruby do
         expect(false).to compile_to('false')
         expect(5).to compile_to('5')
         expect('hello').to compile_to('"hello"')
+        today = Date.today
+        expect(today).to compile_to("Date.parse(\"#{today}\")")
       end
     end
 

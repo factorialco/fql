@@ -27,6 +27,8 @@ module FQL
           "#{expr}"
         when String
           "\"#{expr}\""
+        when Date
+          "Date.parse(\"#{expr.to_s}\")"
         when Query::DSL::And
           "(#{compile_expression(T.let(expr.lhs, Query::DSL::BoolExpr))} && #{compile_expression(T.let(expr.rhs, Query::DSL::BoolExpr))})"
         when Query::DSL::Or
@@ -53,7 +55,7 @@ module FQL
         when Query::DSL::Var
           "__fql_vars__[#{expr.name.inspect}]"
         else
-          raise "don't know how to compile #{expr.inspect}"
+          T.absurd(expr)
         end
       end
     end
