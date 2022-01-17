@@ -16,8 +16,8 @@ module FQL
       Backend::Ruby.compile(expr)
     end
 
-    sig { params(model: ActiveRecord::Base, expr: DSL::BoolExpr).returns(String) }
-    def to_arel(model, expr)
+    sig { params(model: T.class_of(ActiveRecord::Base)).returns(ActiveRecord::Relation) }
+    def to_arel(model)
       Backend::Arel.compile(model, expr)
     end
 

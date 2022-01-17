@@ -8,13 +8,15 @@ module FQL
       extend T::Generic
 
       A = ::Arel::Nodes
+      PlainValue = T.type_alias { T.any(String, Integer, Date) }
+      Attribute = T.type_alias { ::Arel::Attribute }
 
       sig { params(model: T.class_of(ActiveRecord::Base), vars: T::Hash[Symbol, T.untyped]).void }
       def initialize(model, vars={})
         @model = model
         @arel_table = T.let(model.arel_table, ::Arel::Table)
         @vars = vars
-        @joins = []
+        @joins = T.let([], T::Array[A::Join])
       end
 
       sig do
@@ -36,7 +38,7 @@ module FQL
         end.where(where_clause)
       end
 
-      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr)).returns(T.any(A::Node, Query::DSL::Primitive, ::Arel::Table, ::Arel::Attribute)) }
+      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr)).returns(T.any(A::Node, PlainValue, ::Arel::Table, Attribute)) }
       def compile_expression(expr)
         case expr
         when true, false
@@ -44,21 +46,21 @@ module FQL
         when Integer, String, Date
           expr
         when Query::DSL::And
-          compile_expression(expr.lhs).and(compile_expression(expr.rhs))
+          T.cast(compile_expression(expr.lhs), A::Node).and(T.cast(compile_expression(expr.rhs), A::Node))
         when Query::DSL::Or
-          compile_expression(expr.lhs).or(compile_expression(expr.rhs))
+          T.cast(compile_expression(expr.lhs), A::Node).or(T.cast(compile_expression(expr.rhs), A::Node))
         when Query::DSL::Not
-          compile_expression(expr.expr).not
+          T.cast(compile_expression(expr.expr), A::Node).not
         when Query::DSL::Eq
-          compile_expression(expr.lhs).eq(compile_expression(expr.rhs))
+          T.cast(compile_expression(expr.lhs), Attribute).eq(compile_expression(expr.rhs))
         when Query::DSL::Gt
-          compile_expression(expr.lhs).gt(compile_expression(expr.rhs))
+          T.cast(compile_expression(expr.lhs), Attribute).gt(compile_expression(expr.rhs))
         when Query::DSL::Gte
-          compile_expression(expr.lhs).gteq(compile_expression(expr.rhs))
+          T.cast(compile_expression(expr.lhs), Attribute).gteq(compile_expression(expr.rhs))
         when Query::DSL::Lt
-          compile_expression(expr.lhs).lt(compile_expression(expr.rhs))
+          T.cast(compile_expression(expr.lhs), Attribute).lt(compile_expression(expr.rhs))
         when Query::DSL::Lte
-          compile_expression(expr.lhs).lteq(compile_expression(expr.rhs))
+          T.cast(compile_expression(expr.lhs), Attribute).lteq(compile_expression(expr.rhs))
         when Query::DSL::Rel
           if expr.name == :self
             arel_table
@@ -74,7 +76,9 @@ module FQL
         when Query::DSL::Var
           vars.fetch(expr.name)
         when Query::DSL::Attr
-          compile_expression(expr.target)[expr.name]
+          T.cast(compile_expression(expr.target), ::Arel::Table)[expr.name]
+        when Query::DSL::BoolExpr, Query::DSL::ValueExpr
+          compile_expression(expr)
         else
           T.absurd(expr)
         end
