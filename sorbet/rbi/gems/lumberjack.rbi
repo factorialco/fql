@@ -258,7 +258,7 @@ module Lumberjack::TaggedLoggerSupport
   def push_tags(*tags); end
   def tagged(*tags, &block); end
 end
-class Lumberjack::TaggedLoggerSupport::Formatter < Anonymous_Delegator_3
+class Lumberjack::TaggedLoggerSupport::Formatter < Anonymous_Delegator_5
   def __formatter; end
   def clear_tags!(*args, &block); end
   def current_tags; end
@@ -274,6 +274,9 @@ module Lumberjack::TaggedLogging
 end
 module Lumberjack::TaggedLogging::ClassMethods
   def new(logger); end
+end
+module ActiveSupport::TaggedLogging
+  include Lumberjack::TaggedLogging
 end
 class Lumberjack::Template
   def call(entry); end

@@ -56,7 +56,6 @@ class Regexp::Expression::CharacterSet < Regexp::Expression::Subexpression
   include RuboCop::Ext::RegexpParser::Expression::CharacterSet
 end
 class String
-  def blank?; end
 end
 module RuboCop::Ext::ProcessedSource
   def comment_config; end

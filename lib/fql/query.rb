@@ -1,4 +1,6 @@
 # typed: strict
+require 'active_record'
+require 'sorbet-rails'
 
 module FQL
   class Query
@@ -12,6 +14,11 @@ module FQL
     sig { returns(Backend::Ruby::CompiledFunction) }
     def to_ruby
       Backend::Ruby.compile(expr)
+    end
+
+    sig { params(model: ActiveRecord::Base, expr: DSL::BoolExpr).returns(String) }
+    def to_arel(model, expr)
+      Backend::Arel.compile(model, expr)
     end
 
     private

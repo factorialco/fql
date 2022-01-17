@@ -326,6 +326,7 @@ class RSpec::Core::Hooks::BaseHookCollection
   def append(*a, &b); end
   def assoc(*a, &b); end
   def at(*a, &b); end
+  def blank?(*a, &b); end
   def bsearch(*a, &b); end
   def bsearch_index(*a, &b); end
   def clear(*a, &b); end
@@ -334,10 +335,12 @@ class RSpec::Core::Hooks::BaseHookCollection
   def combination(*a, &b); end
   def compact!(*a, &b); end
   def compact(*a, &b); end
+  def compact_blank!(*a, &b); end
   def concat(*a, &b); end
   def count(*a, &b); end
   def cycle(*a, &b); end
   def deconstruct(*a, &b); end
+  def deep_dup(*a, &b); end
   def delete(*a, &b); end
   def delete_at(*a, &b); end
   def delete_if(*a, &b); end
@@ -349,6 +352,7 @@ class RSpec::Core::Hooks::BaseHookCollection
   def each_index(*a, &b); end
   def empty?(*a, &b); end
   def eql?(*a, &b); end
+  def extract_options!(*a, &b); end
   def fetch(*a, &b); end
   def fill(*a, &b); end
   def filter!(*a, &b); end
@@ -414,8 +418,14 @@ class RSpec::Core::Hooks::BaseHookCollection
   def take_while(*a, &b); end
   def to_a(*a, &b); end
   def to_ary(*a, &b); end
+  def to_default_s(*a, &b); end
+  def to_formatted_s(*a, &b); end
   def to_h(*a, &b); end
+  def to_param(*a, &b); end
+  def to_query(*a, &b); end
   def to_s(*a, &b); end
+  def to_sentence(*a, &b); end
+  def to_xml(*a, &b); end
   def transpose(*a, &b); end
   def union(*a, &b); end
   def uniq!(*a, &b); end
@@ -526,6 +536,7 @@ module RSpec::Core::HashImitatable
   def []=(key, value); end
   def all?(*args, &block); end
   def any?(*args, &block); end
+  def assert_valid_keys(*args, &block); end
   def assoc(*args, &block); end
   def chain(*args, &block); end
   def chunk(*args, &block); end
@@ -535,11 +546,21 @@ module RSpec::Core::HashImitatable
   def collect_concat(*args, &block); end
   def compact!(*args, &block); end
   def compact(*args, &block); end
+  def compact_blank!(*args, &block); end
+  def compact_blank(*args, &block); end
   def compare_by_identity(*args, &block); end
   def compare_by_identity?(*args, &block); end
   def count(*args, &block); end
   def cycle(*args, &block); end
   def deconstruct_keys(*args, &block); end
+  def deep_merge!(*args, &block); end
+  def deep_merge(*args, &block); end
+  def deep_stringify_keys!(*args, &block); end
+  def deep_stringify_keys(*args, &block); end
+  def deep_symbolize_keys!(*args, &block); end
+  def deep_symbolize_keys(*args, &block); end
+  def deep_transform_keys!(*args, &block); end
+  def deep_transform_keys(*args, &block); end
   def default(*args, &block); end
   def default=(*args, &block); end
   def default_proc(*args, &block); end
@@ -562,7 +583,13 @@ module RSpec::Core::HashImitatable
   def each_with_object(*args, &block); end
   def empty?(*args, &block); end
   def entries(*args, &block); end
+  def except!(*args, &block); end
+  def except(*args, &block); end
+  def exclude?(*args, &block); end
+  def excluding(*args, &block); end
   def extra_hash_attributes; end
+  def extract!(*args, &block); end
+  def extractable_options?(*args, &block); end
   def fetch(*args, &block); end
   def fetch_values(*args, &block); end
   def filter!(*args, &block); end
@@ -582,7 +609,10 @@ module RSpec::Core::HashImitatable
   def has_value?(*args, &block); end
   def hash_for_delegation; end
   def include?(*args, &block); end
+  def including(*args, &block); end
   def index(*args, &block); end
+  def index_by(*args, &block); end
+  def index_with(*args, &block); end
   def inject(*args, &block); end
   def invert(*args, &block); end
   def issue_deprecation(_method_name, *_args); end
@@ -592,6 +622,7 @@ module RSpec::Core::HashImitatable
   def keys(*args, &block); end
   def lazy(*args, &block); end
   def length(*args, &block); end
+  def many?(*args, &block); end
   def map(*args, &block); end
   def max(*args, &block); end
   def max_by(*args, &block); end
@@ -605,6 +636,8 @@ module RSpec::Core::HashImitatable
   def none?(*args, &block); end
   def one?(*args, &block); end
   def partition(*args, &block); end
+  def pick(*args, &block); end
+  def pluck(*args, &block); end
   def rassoc(*args, &block); end
   def reduce(*args, &block); end
   def rehash(*args, &block); end
@@ -618,6 +651,7 @@ module RSpec::Core::HashImitatable
   def set_value(name, value); end
   def shift(*args, &block); end
   def size(*args, &block); end
+  def slice!(*args, &block); end
   def slice(*args, &block); end
   def slice_after(*args, &block); end
   def slice_before(*args, &block); end
@@ -625,13 +659,19 @@ module RSpec::Core::HashImitatable
   def sort(*args, &block); end
   def sort_by(*args, &block); end
   def store(*args, &block); end
+  def stringify_keys!(*args, &block); end
+  def stringify_keys(*args, &block); end
   def sum(*args, &block); end
+  def symbolize_keys!(*args, &block); end
+  def symbolize_keys(*args, &block); end
   def take(*args, &block); end
   def take_while(*args, &block); end
   def tally(*args, &block); end
   def to_a(*args, &block); end
   def to_h; end
   def to_hash(*args, &block); end
+  def to_options!(*args, &block); end
+  def to_options(*args, &block); end
   def to_proc(*args, &block); end
   def to_set(*args, &block); end
   def transform_keys!(*args, &block); end
@@ -643,6 +683,7 @@ module RSpec::Core::HashImitatable
   def value?(*args, &block); end
   def values(*args, &block); end
   def values_at(*args, &block); end
+  def without(*args, &block); end
   def zip(*args, &block); end
 end
 module RSpec::Core::HashImitatable::ClassMethods

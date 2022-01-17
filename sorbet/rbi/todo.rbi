@@ -2,4 +2,12 @@
 #   srb rbi todo
 
 # typed: strong
+module ActiveRecord::NestedAttributes::ClassMethods::ActionController::Parameters; end
+module ActiveRecord::Persistence::ActionController::Parameters; end
+module ActiveSupport::TimeWithZone::TZInfo::TimezonePeriod; end
+module FQL::Query::DSL::BoolExpr; end
+module FQL::Query::DSL::ValueExpr; end
 module Kramdown::Converter::Kramdown::Utils::Configurable; end
+module T::Private::Methods::MethodHooks; end
+module T::Private::Methods::SingletonMethodHooks; end
+module Time::TZInfo::Timezone; end

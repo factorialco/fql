@@ -199,6 +199,8 @@ class Rake::FileList
   def combination(*args, &block); end
   def compact!(*args, &block); end
   def compact(*args, &block); end
+  def compact_blank!(*args, &block); end
+  def compact_blank(*args, &block); end
   def concat(*args, &block); end
   def count(*args, &block); end
   def cycle(*args, &block); end
@@ -222,10 +224,13 @@ class Rake::FileList
   def empty?(*args, &block); end
   def entries(*args, &block); end
   def exclude(*patterns, &block); end
+  def exclude?(*args, &block); end
   def excluded_from_list?(fn); end
+  def excluding(*args, &block); end
   def existing!; end
   def existing; end
   def ext(newext = nil); end
+  def extract_options!(*args, &block); end
   def fetch(*args, &block); end
   def fill(*args, &block); end
   def filter!(*args, &block); end
@@ -246,7 +251,10 @@ class Rake::FileList
   def import(array); end
   def include(*filenames); end
   def include?(*args, &block); end
+  def including(*args, &block); end
   def index(*args, &block); end
+  def index_by(*args, &block); end
+  def index_with(*args, &block); end
   def initialize(*patterns); end
   def inject(*args, &block); end
   def insert(*args, &block); end
@@ -259,6 +267,7 @@ class Rake::FileList
   def last(*args, &block); end
   def lazy(*args, &block); end
   def length(*args, &block); end
+  def many?(*args, &block); end
   def map!(*args, &block); end
   def map(*args, &block); end
   def max(*args, &block); end
@@ -274,6 +283,8 @@ class Rake::FileList
   def partition(&block); end
   def pathmap(spec = nil, &block); end
   def permutation(*args, &block); end
+  def pick(*args, &block); end
+  def pluck(*args, &block); end
   def pop(*args, &block); end
   def prepend(*args, &block); end
   def product(*args, &block); end
@@ -320,15 +331,20 @@ class Rake::FileList
   def tally(*args, &block); end
   def to_a; end
   def to_ary; end
+  def to_default_s(*args, &block); end
+  def to_formatted_s(*args, &block); end
   def to_h(*args, &block); end
   def to_s; end
+  def to_sentence(*args, &block); end
   def to_set(*args, &block); end
+  def to_xml(*args, &block); end
   def transpose(*args, &block); end
   def union(*args, &block); end
   def uniq!(*args, &block); end
   def uniq(*args, &block); end
   def unshift(*args, &block); end
   def values_at(*args, &block); end
+  def without(*args, &block); end
   def zip(*args, &block); end
   def |(*args, &block); end
   include Rake::Cloneable
