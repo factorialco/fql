@@ -32,7 +32,7 @@ RSpec.describe FQL::Backend::Arel do
     belongs_to :user, foreign_key: :tenant_id
   end
 
-  subject { described_class.new(User) }
+  subject { described_class.new(User, {}) }
 
   describe '.compile_expression' do
     describe 'primitive values' do
@@ -108,8 +108,18 @@ RSpec.describe FQL::Backend::Arel do
     end
 
     describe 'Var' do
-      it 'compiles to a bind var' do
-        expect(F.eq(F.attr(F.rel(:address), :country), F.var(:country))).to compile_to('SELECT "users".* FROM "users" INNER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" = ?')
+      subject { described_class.new(User, {country: 'fr'}) }
+
+      it 'lookups up a variable at compile time' do
+        expect(F.eq(F.attr(F.rel(:address), :country), F.var(:country))).to compile_to('SELECT "users".* FROM "users" INNER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" = \'fr\'')
+      end
+
+      context 'when the variable does not exist at compile time' do
+        it 'raises an exception' do
+          expect {
+            subject.compile_expression(F.var(:foo))
+          }.to raise_error(/key not found/)
+        end
       end
     end
   end

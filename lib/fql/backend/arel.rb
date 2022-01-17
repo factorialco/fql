@@ -9,22 +9,23 @@ module FQL
 
       A = ::Arel::Nodes
 
-      sig { params(model: T.class_of(ActiveRecord::Base)).void }
-      def initialize(model)
+      sig { params(model: T.class_of(ActiveRecord::Base), vars: T::Hash[Symbol, T.untyped]).void }
+      def initialize(model, vars={})
         @model = model
         @arel_table = T.let(model.arel_table, ::Arel::Table)
+        @vars = vars
         @joins = []
-        @binds = []
       end
 
       sig do
         params(
           model: T.class_of(ActiveRecord::Base),
-          expr: Query::DSL::BoolExpr
-        ).returns(String)
+          expr: Query::DSL::BoolExpr,
+          vars: T::Hash[Symbol, T.untyped]
+        ).returns(ActiveRecord::Relation)
       end
-      def self.compile(model, expr)
-        new(model).compile(expr)
+      def self.compile(model, expr, vars={})
+        new(model, vars).compile(expr)
       end
 
       sig { params(expr: Query::DSL::BoolExpr).returns(ActiveRecord::Relation) }
@@ -32,7 +33,7 @@ module FQL
         where_clause = compile_expression(expr)
         joins.reduce(model) do |acc, join|
           acc.joins(join.join_sources)
-        end.bind(binds).where(where_clause)
+        end.where(where_clause)
       end
 
       sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr)).returns(T.any(A::Node, Query::DSL::Primitive, ::Arel::Table, ::Arel::Attribute)) }
@@ -71,8 +72,7 @@ module FQL
             aliased_relation
           end
         when Query::DSL::Var
-          @binds.append(A::BindParam.new(expr.name))
-          '?'
+          vars.fetch(expr.name)
         when Query::DSL::Attr
           compile_expression(expr.target)[expr.name]
         else
@@ -90,6 +90,9 @@ module FQL
 
       sig { returns(T::Array[T.untyped]) }
       attr_reader :joins
+
+      sig { returns(T::Hash[Symbol, T.untyped]) }
+      attr_reader :vars
     end
   end
 end
