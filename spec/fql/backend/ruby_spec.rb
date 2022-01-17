@@ -120,6 +120,12 @@ RSpec.describe FQL::Backend::Ruby do
       end
     end
 
+    describe 'Match regex' do
+      it 'compiles to match' do
+        expect(F.matches_regex("Something", "thing")).to compile_to('"Something".match(/thing/)')
+      end
+    end
+
     describe 'Rel' do
       context 'when the name refers to self' do
         it 'compiles to the special reference __itself__' do

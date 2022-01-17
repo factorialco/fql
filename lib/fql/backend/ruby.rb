@@ -46,6 +46,8 @@ module FQL
           "(#{compile_expression(T.let(expr.lhs, Query::DSL::ValueExpr))} #{operator} #{compile_expression(T.let(expr.rhs, Query::DSL::ValueExpr))})"
         when Query::DSL::Contains
           "#{compile_expression(expr.lhs)}.include?(#{compile_expression(expr.rhs)})"
+        when Query::DSL::MatchesRegex
+          "#{compile_expression(expr.lhs)}.match(/#{expr.rhs}/)"
         when Query::DSL::Rel
           if expr.name == :self
             '__itself__'

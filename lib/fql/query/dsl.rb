@@ -37,7 +37,7 @@ module FQL
         const :name, Symbol
       end
 
-      BoolExpr = T.type_alias { T.any(Or, And, Eq, Gt, Gte, Lt, Lte, Not, Contains, T::Boolean) }
+      BoolExpr = T.type_alias { T.any(Or, And, Eq, Gt, Gte, Lt, Lte, Not, Contains, MatchesRegex, T::Boolean) }
       Primitive = T.type_alias { T.any(String, Integer, Date, T::Boolean) }
       ValueExpr = T.type_alias { T.any(Attr, Rel, Var, Primitive) }
 
@@ -68,6 +68,11 @@ module FQL
       end
 
       class Contains < T::Struct
+        const :lhs, ValueExpr
+        const :rhs, String
+      end
+
+      class MatchesRegex < T::Struct
         const :lhs, ValueExpr
         const :rhs, String
       end
@@ -133,6 +138,11 @@ module FQL
         sig { params(lhs: ValueExpr, rhs: String).returns(Contains) }
         def contains(lhs, rhs)
           Contains.new(lhs: lhs, rhs: rhs)
+        end
+
+        sig { params(lhs: ValueExpr, rhs: String).returns(MatchesRegex) }
+        def matches_regex(lhs, rhs)
+          MatchesRegex.new(lhs: lhs, rhs: rhs)
         end
       end
 

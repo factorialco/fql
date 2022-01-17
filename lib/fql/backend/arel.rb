@@ -64,6 +64,8 @@ module FQL
           T.cast(compile_expression(expr.lhs), Attribute).lteq(compile_expression(expr.rhs))
         when Query::DSL::Contains
           T.cast(compile_expression(expr.lhs), Attribute).matches("%#{compile_expression(expr.rhs)}%")
+        when Query::DSL::MatchesRegex
+          T.cast(compile_expression(expr.lhs), Attribute).matches_regexp(compile_expression(expr.rhs))
         when Query::DSL::Rel
           if expr.name == :self
             arel_table
