@@ -37,7 +37,7 @@ module FQL
         const :name, Symbol
       end
 
-      BoolExpr = T.type_alias { T.any(Or, And, Eq, Gt, Gte, Lt, Lte, Not, T::Boolean) }
+      BoolExpr = T.type_alias { T.any(Or, And, Eq, Gt, Gte, Lt, Lte, Not, Contains, T::Boolean) }
       Primitive = T.type_alias { T.any(String, Integer, Date, T::Boolean) }
       ValueExpr = T.type_alias { T.any(Attr, Rel, Var, Primitive) }
 
@@ -65,6 +65,11 @@ module FQL
       class Lte < T::Struct
         const :lhs, ValueExpr
         const :rhs, ValueExpr
+      end
+
+      class Contains < T::Struct
+        const :lhs, ValueExpr
+        const :rhs, String
       end
 
       module Methods
@@ -123,6 +128,11 @@ module FQL
         sig { params(lhs: ValueExpr, rhs: ValueExpr).returns(Lte) }
         def lte(lhs, rhs)
           Lte.new(lhs: lhs, rhs: rhs)
+        end
+
+        sig { params(lhs: ValueExpr, rhs: String).returns(Contains) }
+        def contains(lhs, rhs)
+          Contains.new(lhs: lhs, rhs: rhs)
         end
       end
 

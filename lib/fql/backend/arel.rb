@@ -9,7 +9,8 @@ module FQL
 
       A = ::Arel::Nodes
       PlainValue = T.type_alias { T.any(String, Integer, Date) }
-      Attribute = T.type_alias { ::Arel::Attribute }
+      Attribute = T.type_alias { T.any(::Arel::Attribute, A::True, A::False) }
+      Table = T.type_alias { T.any(::Arel::Table, A::TableAlias) }
 
       sig { params(model: T.class_of(ActiveRecord::Base), vars: T::Hash[Symbol, T.untyped]).void }
       def initialize(model, vars={})
@@ -38,7 +39,7 @@ module FQL
         end.where(where_clause)
       end
 
-      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr)).returns(T.any(A::Node, PlainValue, ::Arel::Table, Attribute)) }
+      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr)).returns(T.any(A::Node, PlainValue, Table, Attribute)) }
       def compile_expression(expr)
         case expr
         when true, false
@@ -61,6 +62,8 @@ module FQL
           T.cast(compile_expression(expr.lhs), Attribute).lt(compile_expression(expr.rhs))
         when Query::DSL::Lte
           T.cast(compile_expression(expr.lhs), Attribute).lteq(compile_expression(expr.rhs))
+        when Query::DSL::Contains
+          T.cast(compile_expression(expr.lhs), Attribute).matches("%#{compile_expression(expr.rhs)}%")
         when Query::DSL::Rel
           if expr.name == :self
             arel_table
@@ -76,7 +79,7 @@ module FQL
         when Query::DSL::Var
           vars.fetch(expr.name)
         when Query::DSL::Attr
-          T.cast(compile_expression(expr.target), ::Arel::Table)[expr.name]
+          T.cast(compile_expression(expr.target), Table)[expr.name]
         when Query::DSL::BoolExpr, Query::DSL::ValueExpr
           compile_expression(expr)
         else

@@ -93,6 +93,12 @@ RSpec.describe FQL::Backend::Arel do
       end
     end
 
+    describe 'Contains' do
+      it 'compiles to matches' do
+        expect(F.contains(F.attr(F.rel(:self), :first_name), "thing")).to compile_to('SELECT "users".* FROM "users" WHERE "users"."first_name" LIKE \'%thing%\'')
+      end
+    end
+
     describe 'Rel + Attr' do
       context 'when the name refers to self' do
         it 'compiles to the main table attribute' do

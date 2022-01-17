@@ -61,6 +61,20 @@ class FQL::Query::DSL::Not < T::Struct
   extend T::Props::Plugin::ClassMethods
   extend T::Props::Serializable::ClassMethods
 end
+class FQL::Query::DSL::Contains < T::Struct
+  def __t_props_generated_deserialize(*args); end
+  def __t_props_generated_serialize(*args); end
+  def lhs; end
+  def rhs; end
+  def self.inherited(s); end
+  extend T::Props::ClassMethods
+  extend T::Props::Plugin::ClassMethods
+  extend T::Props::Plugin::ClassMethods
+  extend T::Props::Plugin::ClassMethods
+  extend T::Props::Plugin::ClassMethods
+  extend T::Props::Plugin::ClassMethods
+  extend T::Props::Serializable::ClassMethods
+end
 class FQL::Query::DSL::Rel < T::Struct
   def __t_props_generated_deserialize(*args); end
   def __t_props_generated_serialize(*args); end

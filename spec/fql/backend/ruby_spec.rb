@@ -114,6 +114,12 @@ RSpec.describe FQL::Backend::Ruby do
       end
     end
 
+    describe 'Contains' do
+      it 'compiles to include?' do
+        expect(F.contains("Something", "thing")).to compile_to('"Something".include?("thing")')
+      end
+    end
+
     describe 'Rel' do
       context 'when the name refers to self' do
         it 'compiles to the special reference __itself__' do
