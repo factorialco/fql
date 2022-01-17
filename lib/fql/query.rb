@@ -11,6 +11,11 @@ module FQL
       @expr = expr
     end
 
+    sig { params(input: String).returns(T.attached_class) }
+    def self.from_json(input)
+      new(Serde::JSON.new.deserialize(input))
+    end
+
     sig { returns(Backend::Ruby::CompiledFunction) }
     def to_ruby
       Backend::Ruby.compile(expr)
@@ -19,6 +24,11 @@ module FQL
     sig { params(model: T.class_of(ActiveRecord::Base)).returns(ActiveRecord::Relation) }
     def to_arel(model)
       Backend::Arel.compile(model, expr)
+    end
+
+    sig { returns(String) }
+    def to_json
+      Serde::JSON.new.serialize(expr)
     end
 
     private
