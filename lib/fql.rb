@@ -1,4 +1,4 @@
-# typed: ignore
+# typed: strict
 require 'zeitwerk'
 require 'sorbet-runtime'
 

@@ -82,8 +82,6 @@ module FQL
           vars.fetch(expr.name)
         when Query::DSL::Attr
           T.cast(compile_expression(expr.target), Table)[expr.name]
-        when Query::DSL::BoolExpr, Query::DSL::ValueExpr
-          compile_expression(expr)
         else
           T.absurd(expr)
         end

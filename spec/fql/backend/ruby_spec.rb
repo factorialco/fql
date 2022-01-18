@@ -1,6 +1,5 @@
-# typed: ignore
+# typed: false
 require 'spec_helper'
-require 'ostruct'
 
 RSpec.describe FQL::Backend::Ruby do
   module F

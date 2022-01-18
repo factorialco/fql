@@ -57,8 +57,8 @@ module FQL
           {op: "attr", target: serialize_expression(expr.target), name: expr.name}
         when Query::DSL::Var
           {op: "var", name: expr.name}
-        when Query::DSL::BoolExpr, Query::DSL::ValueExpr
-          serialize_expression(expr)
+        when Query::DSL::MatchesRegex
+          {op: "matches_regex", lhs: serialize_expression(expr.lhs), rhs: expr.rhs}
         else
           T.absurd(expr)
         end
@@ -108,6 +108,12 @@ module FQL
             Query::DSL::Attr.new(target: target, name: expr["name"].to_sym)
           when "var"
             Query::DSL::Var.new(name: expr["name"].to_sym)
+          when "contains"
+            lhs = T.cast(parse_expression(expr["lhs"]), Query::DSL::ValueExpr)
+            Query::DSL::Contains.new(lhs: lhs, rhs: expr["rhs"])
+          when "matches_regex"
+            lhs = T.cast(parse_expression(expr["lhs"]), Query::DSL::ValueExpr)
+            Query::DSL::MatchesRegex.new(lhs: lhs, rhs: expr["rhs"])
           else
             raise "unrecognized op '#{expr["op"]}'"
           end

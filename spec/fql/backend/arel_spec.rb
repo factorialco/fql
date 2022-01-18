@@ -1,4 +1,4 @@
-# typed: xtrue
+# typed: false
 require 'spec_helper'
 
 RSpec.describe FQL::Backend::Arel do

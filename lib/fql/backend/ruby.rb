@@ -58,8 +58,6 @@ module FQL
           "#{'__itself__.' unless expr.target.name == :self}#{compile_expression(expr.target)}.#{expr.name.to_s}"
         when Query::DSL::Var
           "__fql_vars__[#{expr.name.inspect}]"
-        when Query::DSL::BoolExpr, Query::DSL::ValueExpr
-          compile_expression(expr)
         else
           T.absurd(expr)
         end
