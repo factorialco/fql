@@ -1,5 +1,6 @@
 require:
   - rubocop-rspec
+  - rubocop-sorbet
   - rubocop-packaging
   - rubocop-performance
   - rubocop-rake
@@ -25,23 +26,20 @@ Layout/SpaceAroundEqualsInParameterDefault:
   EnforcedStyle: no_space
 
 Metrics/AbcSize:
-  Max: 20
-  Exclude:
-    - "spec/**/*"
+  Enabled: false
 
 Metrics/BlockLength:
   Exclude:
     - "*.gemspec"
     - "Rakefile"
+    - "spec/**/*"
+    - "Guardfile"
 
 Metrics/ClassLength:
-  Exclude:
-    - "spec/**/*"
+  Enabled: false
 
 Metrics/MethodLength:
-  Max: 18
-  Exclude:
-    - "spec/**/*"
+  Enabled: false
 
 Metrics/ParameterLists:
   Max: 6
@@ -81,3 +79,72 @@ Style/StringLiterals:
 
 Style/TrivialAccessors:
   AllowPredicates: true
+
+RSpec/ExampleLength:
+  Enabled: False
+
+Sorbet/HasSigil:
+  Enabled: True
+
+Sorbet/StrictSigil:
+  Enabled: True
+  Exclude:
+    - 'spec/**/*'
+    - 'lib/fql/version.rb'
+
+Sorbet/ForbidUntypedStructProps:
+  Enabled: True
+  Exclude:
+    - 'lib/fql/query/dsl.rb'
+
+Metrics/CyclomaticComplexity:
+  Enabled: false
+
+RSpec/LeakyConstantDeclaration:
+  Enabled: false
+
+Lint/ConstantDefinitionInBlock:
+  Enabled: true
+  Exclude:
+    - 'spec/**/*'
+
+Layout/LineLength:
+  Enabled: true
+  Exclude:
+    - 'spec/**/*'
+
+RSpec/ExpectActual:
+  Enabled: true
+  Exclude:
+    - 'spec/fql/backend/**/*'
+
+RSpec/VerifiedDoubles:
+  Enabled: false
+
+RSpec/NestedGroups:
+  Enabled: false
+
+RSpec/NamedSubject:
+  Enabled: false
+
+Sorbet/EnforceSignatures:
+  Enabled: true
+  Exclude:
+    - 'Rakefile'
+
+Style/AccessorGrouping:
+  Enabled: false
+
+Lint/SuppressedException:
+  Enabled: true
+  Exclude:
+    - 'Rakefile'
+
+RSpec/MultipleExpectations:
+  Enabled: false
+
+Metrics/PerceivedComplexity:
+  Enabled: false
+
+Lint/ToJSON:
+  Enabled: false

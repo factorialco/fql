@@ -1,5 +1,5 @@
-# typed: true
-require 'date'
+# typed: strict
+require "date"
 
 module FQL
   class Query

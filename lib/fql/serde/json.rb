@@ -1,64 +1,67 @@
 # typed: strict
-require 'json'
+require "json"
 
 module FQL
   module Serde
     class JSON
-      include Serde
-
       extend T::Sig
       extend T::Generic
 
-      Input = type_member(fixed: String)
-      Output = type_member(fixed: String)
-
-      sig { override.params(input: Input).returns(Query::DSL::BoolExpr) }
+      sig { params(input: String).returns(Query::DSL::BoolExpr) }
       def deserialize(input)
         m = T.let(::JSON.parse(input), T::Hash[String, T.untyped])
         T.cast(parse_expression(m), Query::DSL::BoolExpr)
       end
 
-      sig { override.params(expr: Query::DSL::BoolExpr).returns(Output) }
+      sig { params(expr: Query::DSL::BoolExpr).returns(String) }
       def serialize(expr)
         ::JSON.generate(serialize_expression(expr))
       end
 
-      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr)).returns(T.any(T::Hash[Symbol, T.untyped], T::Boolean, String, Integer, Date)) }
+      sig do
+        params(
+          expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr)
+        ).returns(
+          T.any(
+            T::Hash[Symbol, T.untyped],
+            T::Boolean,
+            String,
+            Integer,
+            Date
+          )
+        )
+      end
       def serialize_expression(expr)
         case expr
-        when true, false
-          expr
-        when Integer
-          expr
-        when String
+        when true, false, Integer, String
           expr
         when Date
           expr.to_s
         when Query::DSL::And
-          {op: "and", lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs)}
+          { op: "and", lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs) }
         when Query::DSL::Or
-          {op: "or", lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs)}
+          { op: "or", lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs) }
         when Query::DSL::Not
-          {op: "not", expr: serialize_expression(expr.expr)}
+          { op: "not", expr: serialize_expression(expr.expr) }
         when Query::DSL::Eq, Query::DSL::Gt, Query::DSL::Gte, Query::DSL::Lt, Query::DSL::Lte
           operator = case expr
-            when Query::DSL::Eq then 'eq'
-            when Query::DSL::Gt then 'gt'
-            when Query::DSL::Gte then 'gte'
-            when Query::DSL::Lt then 'lt'
-            when Query::DSL::Lte then 'lte'
-          end
-          {op: operator, lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs)}
+                     when Query::DSL::Eq then "eq"
+                     when Query::DSL::Gt then "gt"
+                     when Query::DSL::Gte then "gte"
+                     when Query::DSL::Lt then "lt"
+                     when Query::DSL::Lte then "lte"
+                     end
+          { op: operator, lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs) }
         when Query::DSL::Contains
-          {op: "contains", lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs)}
+          { op: "contains", lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs) }
         when Query::DSL::Rel
-          {op: "rel", name: expr.name}
+          { op: "rel", name: expr.name }
         when Query::DSL::Attr
-          {op: "attr", target: serialize_expression(expr.target), name: expr.name}
+          { op: "attr", target: serialize_expression(expr.target), name: expr.name }
         when Query::DSL::Var
-          {op: "var", name: expr.name}
+          { op: "var", name: expr.name }
         when Query::DSL::MatchesRegex
-          {op: "matches_regex", lhs: serialize_expression(expr.lhs), rhs: expr.rhs}
+          { op: "matches_regex", lhs: serialize_expression(expr.lhs), rhs: expr.rhs }
         else
           T.absurd(expr)
         end
@@ -66,9 +69,12 @@ module FQL
 
       private
 
-      sig { params(expr: T.any(T::Hash[String, T.untyped], T::Boolean, Integer, String, Date)).returns(T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr)) }
+      sig do
+        params(expr: T.any(T::Hash[String, T.untyped], T::Boolean, Integer, String,
+                           Date)).returns(T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr))
+      end
       def parse_expression(expr)
-        if expr.is_a?(Hash) && expr.has_key?("op")
+        if expr.is_a?(Hash) && expr.key?("op")
           case expr["op"]
           when "and"
             lhs = T.cast(parse_expression(expr["lhs"]), Query::DSL::BoolExpr)
@@ -115,15 +121,13 @@ module FQL
             lhs = T.cast(parse_expression(expr["lhs"]), Query::DSL::ValueExpr)
             Query::DSL::MatchesRegex.new(lhs: lhs, rhs: expr["rhs"])
           else
-            raise "unrecognized op '#{expr["op"]}'"
+            raise "unrecognized op '#{expr['op']}'"
           end
-        else
+        elsif expr.is_a?(Hash) || expr.is_a?(Array)
           # it's a primitive value
-          if expr.is_a?(Hash) || expr.is_a?(Array)
-            raise "can't parse expression: #{expr}"
-          else
-            expr
-          end
+          raise "can't parse expression: #{expr}"
+        else
+          expr
         end
       end
     end

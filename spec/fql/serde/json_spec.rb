@@ -1,5 +1,5 @@
 # typed: false
-require 'spec_helper'
+require "spec_helper"
 
 RSpec.describe FQL::Serde::JSON do
   module F
@@ -22,51 +22,51 @@ RSpec.describe FQL::Serde::JSON do
     end
   end
 
-  it 'roundtrips And' do
+  it "roundtrips And" do
     expect(F.and(F.eq(true, false), F.eq(false, true))).to roundtrip
   end
 
-  it 'roundtrips Or' do
+  it "roundtrips Or" do
     expect(F.or(F.eq(true, false), F.eq(false, true))).to roundtrip
   end
 
-  it 'roundtrips Not' do
+  it "roundtrips Not" do
     expect(F.not(F.eq(true, false))).to roundtrip
   end
 
-  it 'roundtrips Eq' do
+  it "roundtrips Eq" do
     expect(F.eq(true, false)).to roundtrip
   end
 
-  it 'roundtrips Gt' do
+  it "roundtrips Gt" do
     expect(F.gt(F.attr(F.rel(:self), :name), 3)).to roundtrip
   end
 
-  it 'roundtrips Gte' do
+  it "roundtrips Gte" do
     expect(F.gte(F.attr(F.rel(:self), :name), 3)).to roundtrip
   end
 
-  it 'roundtrips Lt' do
+  it "roundtrips Lt" do
     expect(F.lt(F.attr(F.rel(:self), :name), 3)).to roundtrip
   end
 
-  it 'roundtrips Lte' do
+  it "roundtrips Lte" do
     expect(F.lte(F.attr(F.rel(:self), :name), 3)).to roundtrip
   end
 
-  it 'roundtrips Var' do
+  it "roundtrips Var" do
     expect(F.lte(F.attr(F.rel(:self), :name), F.var(:number))).to roundtrip
   end
 
-  it 'roundtrips Contains' do
+  it "roundtrips Contains" do
     expect(F.contains(F.attr(F.rel(:self), :name), "hello")).to roundtrip
   end
 
-  it 'roundtrips MatchesRegex' do
+  it "roundtrips MatchesRegex" do
     expect(F.matches_regex(F.attr(F.rel(:self), :name), "hello")).to roundtrip
   end
 
-  it 'roundtrips a complex query' do
+  it "roundtrips a complex query" do
     expect(
       F.or(
         F.eq(
@@ -74,7 +74,7 @@ RSpec.describe FQL::Serde::JSON do
             F.rel(:location),
             :country
           ),
-          'es'
+          "es"
         ),
         F.gt(
           F.attr(

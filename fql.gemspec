@@ -19,10 +19,10 @@ Gem::Specification.new do |spec|
     "rubygems_mfa_required" => "true"
   }
 
-  spec.add_runtime_dependency 'activerecord', '~> 6.0'
-  spec.add_runtime_dependency 'zeitwerk', '~> 2.5.3'
-  spec.add_runtime_dependency 'sorbet-runtime', '~> 0.5'
-  spec.add_runtime_dependency 'sorbet-rails', '~> 0.7.3'
+  spec.add_runtime_dependency "activerecord", "~> 6.0"
+  spec.add_runtime_dependency "sorbet-rails", "~> 0.7.3"
+  spec.add_runtime_dependency "sorbet-runtime", "~> 0.5"
+  spec.add_runtime_dependency "zeitwerk", "~> 2.5.3"
 
   # Specify which files should be added to the gem when it is released.
   spec.files = Dir.glob(%w[LICENSE.txt README.md {exe,lib}/**/*]).reject { |f| File.directory?(f) }

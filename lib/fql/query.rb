@@ -1,6 +1,6 @@
 # typed: strict
-require 'active_record'
-require 'sorbet-rails'
+require "active_record"
+require "sorbet-rails"
 
 module FQL
   class Query

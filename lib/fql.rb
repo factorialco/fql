@@ -1,12 +1,12 @@
 # typed: strict
-require 'zeitwerk'
-require 'sorbet-runtime'
+require "zeitwerk"
+require "sorbet-runtime"
 
 loader = Zeitwerk::Loader.for_gem
 loader.inflector.inflect(
   "fql" => "FQL",
   "dsl" => "DSL",
-  "json" => "JSON",
+  "json" => "JSON"
 )
 loader.setup
 

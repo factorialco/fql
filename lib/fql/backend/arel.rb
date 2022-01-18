@@ -1,5 +1,5 @@
 # typed: strict
-require 'active_record'
+require "active_record"
 
 module FQL
   module Backend
@@ -39,7 +39,10 @@ module FQL
         end.where(where_clause)
       end
 
-      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr)).returns(T.any(A::Node, PlainValue, Table, Attribute)) }
+      sig do
+        params(expr: T.any(Query::DSL::BoolExpr,
+                           Query::DSL::ValueExpr)).returns(T.any(A::Node, PlainValue, Table, Attribute))
+      end
       def compile_expression(expr)
         case expr
         when true, false
@@ -74,7 +77,14 @@ module FQL
             assoc = model.reflect_on_association(relation_name)
             aliased_relation = A::TableAlias.new(::Arel.sql(assoc.table_name), relation_name)
 
-            joins.append(arel_table.join(aliased_relation).on(arel_table[assoc.join_foreign_key].eq(aliased_relation[assoc.join_primary_key])))
+            joins.append(
+              arel_table
+                .join(aliased_relation)
+                .on(
+                  arel_table[assoc.join_foreign_key]
+                    .eq(aliased_relation[assoc.join_primary_key])
+                )
+            )
 
             aliased_relation
           end
