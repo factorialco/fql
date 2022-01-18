@@ -1,0 +1,7 @@
+#!/bin/bash
+set -euo pipefail
+echo '--- :house_with_garden: Setting up pre-checkout hook'
+
+rm -fr artifacts coverage
+mkdir -p artifacts coverage
+chmod -R a+rw artifacts coverage

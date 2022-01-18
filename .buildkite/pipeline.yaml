@@ -19,8 +19,10 @@ steps:
       docker-compose#v3.7.0:
         <<: *compose_config
   - label: Test
-    command: sh .buildkite/test.sh
+    command: rspec
     artifact_paths: "artifacts/*"
+    agents:
+      queue: test
     plugins:
       docker-compose#v3.7.0:
         <<: *compose_config
