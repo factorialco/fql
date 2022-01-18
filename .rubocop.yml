@@ -83,8 +83,20 @@ Style/TrivialAccessors:
 RSpec/ExampleLength:
   Enabled: False
 
+Sorbet/FalseSigil:
+  Enabled: True
+  Exclude:
+    - 'spec/spec_helper.rb'
+
 Sorbet/HasSigil:
   Enabled: True
+  Exclude:
+    - 'spec/spec_helper.rb'
+
+Sorbet/ValidSigil:
+  Enabled: True
+  Exclude:
+    - 'spec/spec_helper.rb'
 
 Sorbet/StrictSigil:
   Enabled: True

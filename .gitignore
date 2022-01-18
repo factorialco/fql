@@ -6,5 +6,6 @@
 /pkg/
 /site/
 /spec/reports/
+/artifacts/
 /tmp/
-/Gemfile.lock
+.DS_Store

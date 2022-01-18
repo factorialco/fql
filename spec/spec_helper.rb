@@ -1,4 +1,24 @@
-# typed: strict
+# typed: ignore
+require "simplecov"
+if ENV["BUILDKITE"]
+  require "simplecov-buildkite"
+
+  SimpleCov.start do
+    load_profile "buildkite"
+
+    formatter SimpleCov::Formatter::MultiFormatter.new([
+                                                         SimpleCov::Formatter::HTMLFormatter,
+                                                         SimpleCov::Buildkite::AnnotationFormatter
+                                                       ])
+  end
+
+  RSpec.configure do |config|
+    config.add_formatter("RspecJunitFormatter", "artifacts/rspec-#{ENV['BUILDKITE_JOB_ID']}.xml")
+  end
+else
+  SimpleCov.start
+end
+
 require "fql"
 require "active_record"
 
