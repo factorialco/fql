@@ -11,8 +11,7 @@ steps:
         <<: *compose_config
   - wait
   - label: Lint
-    command: rubocop -f emacs -o artifacts/rubocop.txt
-    artifact_paths: "artifacts/*"
+    command: rubocop
     agents:
       queue: test
     plugins:
@@ -20,24 +19,8 @@ steps:
         <<: *compose_config
   - label: Test
     command: rspec
-    artifact_paths: "artifacts/*"
     agents:
       queue: test
     plugins:
       docker-compose#v3.7.0:
         <<: *compose_config
-  - wait: ~
-    continue_on_failure: true
-  - label: Annotate
-    plugins:
-      - bugcrowd/test-summary#v1.11.0:
-          inputs:
-            - label: rspec
-              artifact_path: artifacts/rspec*
-              type: junit
-            - label: rubocop
-              artifact_path: artifacts/rubocop.txt
-              type: oneline
-          formatter:
-            type: details
-          context: test-summary
