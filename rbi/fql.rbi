@@ -123,7 +123,7 @@ module FQL
       end
 
       class Rel < T::Struct
-        prop :name, Symbol, immutable: true
+        prop :name, T::Array[Symbol], immutable: true
 
       end
 
@@ -192,7 +192,7 @@ module FQL
         sig { params(expr: BoolExpr).returns(Not) }
         def not(expr); end
 
-        sig { params(name: Symbol).returns(Rel) }
+        sig { params(name: T.any(Symbol, T::Array[Symbol])).returns(Rel) }
         def rel(name); end
 
         sig { params(target: Rel, name: Symbol).returns(Attr) }

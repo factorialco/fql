@@ -137,6 +137,20 @@ RSpec.describe FQL::Backend::Ruby do
           expect(F.rel(:location)).to compile_to("location")
         end
       end
+
+      context "when the rel is deeply nested" do
+        it "compiles to a nested method call" do
+          expect(
+            F.eq(
+              F.attr(
+                F.rel(%i[address city]),
+                :name
+              ),
+              "Barcelona"
+            )
+          ).to compile_to('(__itself__.address.city.name == "Barcelona")')
+        end
+      end
     end
 
     describe "Attr" do

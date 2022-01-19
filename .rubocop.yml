@@ -160,3 +160,6 @@ Metrics/PerceivedComplexity:
 
 Lint/ToJSON:
   Enabled: false
+
+Sorbet/ConstantsFromStrings:
+  Enabled: false

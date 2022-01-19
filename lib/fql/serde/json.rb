@@ -108,7 +108,7 @@ module FQL
             rhs = T.cast(parse_expression(expr["rhs"]), Query::DSL::ValueExpr)
             Query::DSL::Lte.new(lhs: lhs, rhs: rhs)
           when "rel"
-            Query::DSL::Rel.new(name: expr["name"].to_sym)
+            Query::DSL::Rel.new(name: expr["name"].map(&:to_sym))
           when "attr"
             target = T.cast(parse_expression(expr["target"]), Query::DSL::Rel)
             Query::DSL::Attr.new(target: target, name: expr["name"].to_sym)

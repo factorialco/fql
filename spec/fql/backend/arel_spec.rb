@@ -26,10 +26,16 @@ RSpec.describe FQL::Backend::Arel do
 
   class User < ActiveRecord::Base
     has_one :address, foreign_key: :tenant_id
+    has_one :city, through: :address
   end
 
   class Address < ActiveRecord::Base
     belongs_to :user, foreign_key: :tenant_id
+    belongs_to :city
+  end
+
+  class City < ActiveRecord::Base
+    has_many :addresses
   end
 
   subject { described_class.new(User, {}) }
@@ -116,6 +122,27 @@ RSpec.describe FQL::Backend::Arel do
       context "when the name does not refer to self" do
         it "compiles to a join query" do
           expect(F.eq(F.attr(F.rel(:address), :country), "es")).to compile_to('SELECT "users".* FROM "users" INNER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" = \'es\'')
+        end
+      end
+
+      context "when the rel is deeply nested" do
+        it "compiles to a complex join query" do
+          expect(
+            F.eq(
+              F.attr(
+                F.rel(%i[address city]),
+                :name
+              ),
+              "Barcelona"
+            )
+          ).to compile_to(
+            [
+              'SELECT "users".* FROM "users"',
+              'INNER JOIN addresses "address" ON "users"."id" = "address"."tenant_id"',
+              'INNER JOIN cities "city" ON "addresses"."city_id" = "city"."id"',
+              'WHERE "city"."name" = \'Barcelona\''
+            ].join(" ")
+          )
         end
       end
     end

@@ -16,4 +16,11 @@ ActiveRecord::Schema.define do
 
     t.timestamps
   end
+
+  create_table :cities, force: true do |t|
+    t.belongs_to :address
+    t.string :name
+
+    t.timestamps
+  end
 end

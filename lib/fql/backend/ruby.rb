@@ -55,13 +55,13 @@ module FQL
         when Query::DSL::MatchesRegex
           "#{compile_expression(expr.lhs)}.match(/#{expr.rhs}/)"
         when Query::DSL::Rel
-          if expr.name == :self
+          if expr.name == [:self]
             "__itself__"
           else
-            expr.name.to_s
+            expr.name.map(&:to_s).join(".")
           end
         when Query::DSL::Attr
-          "#{'__itself__.' unless expr.target.name == :self}#{compile_expression(expr.target)}.#{expr.name}"
+          "#{'__itself__.' unless expr.target.name == [:self]}#{compile_expression(expr.target)}.#{expr.name}"
         when Query::DSL::Var
           "__fql_vars__[#{expr.name.inspect}]"
         else

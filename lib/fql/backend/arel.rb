@@ -70,23 +70,31 @@ module FQL
         when Query::DSL::MatchesRegex
           T.cast(compile_expression(expr.lhs), Attribute).matches_regexp(compile_expression(expr.rhs))
         when Query::DSL::Rel
-          if expr.name == :self
+          if expr.name == [:self]
             arel_table
           else
-            relation_name = expr.name.to_s
-            assoc = model.reflect_on_association(relation_name)
-            aliased_relation = A::TableAlias.new(::Arel.sql(assoc.table_name), relation_name)
+            result = expr.name.reduce({ the_joins: [], model: model, aliased_relation: nil }) do |state, relation_name|
+              arel_table = state[:model].arel_table
+              assoc = model.reflect_on_association(relation_name)
+              aliased_relation = A::TableAlias.new(::Arel.sql(assoc.table_name), relation_name)
 
-            joins.append(
-              arel_table
-                .join(aliased_relation)
-                .on(
-                  arel_table[assoc.join_foreign_key]
-                    .eq(aliased_relation[assoc.join_primary_key])
-                )
-            )
+              {
+                the_joins: state[:the_joins] + [
+                  arel_table
+                                               .join(aliased_relation)
+                                               .on(
+                                                 arel_table[assoc.join_foreign_key]
+                                                   .eq(aliased_relation[assoc.join_primary_key])
+                                               )
+                ],
+                model: assoc.class_name.constantize,
+                aliased_relation: aliased_relation
+              }
+            end
 
-            aliased_relation
+            joins.concat(result[:the_joins])
+
+            result[:aliased_relation]
           end
         when Query::DSL::Var
           vars.fetch(expr.name)

@@ -23,7 +23,7 @@ module FQL
       # Resolve a relation.
       # The special relation named `:self` resolves to the root entity.
       class Rel < T::Struct
-        const :name, Symbol
+        const :name, T::Array[Symbol]
       end
 
       # Resolve an attribute of a relation.
@@ -95,9 +95,13 @@ module FQL
           Not.new(expr: expr)
         end
 
-        sig { params(name: Symbol).returns(Rel) }
+        sig { params(name: T.any(Symbol, T::Array[Symbol])).returns(Rel) }
         def rel(name)
-          Rel.new(name: name)
+          if name.is_a?(Symbol)
+            Rel.new(name: [name])
+          else
+            Rel.new(name: name)
+          end
         end
 
         sig { params(target: Rel, name: Symbol).returns(Attr) }
