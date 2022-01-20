@@ -76,6 +76,8 @@ module FQL
             result = expr.name.reduce({ joins: [], model: model, aliased_relation: nil }) do |state, relation_name|
               arel_table = state[:model].arel_table
               assoc = state[:model].reflect_on_association(relation_name)
+              raise "model #{state[:model].name} has no association #{relation_name}" if assoc.nil?
+
               aliased_relation = A::TableAlias.new(::Arel.sql(assoc.table_name), relation_name)
 
               {
