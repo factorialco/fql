@@ -1,6 +1,7 @@
 source "https://rubygems.org"
 gemspec
 
+gem "byebug"
 gem "fivemat"
 gem "guard-rspec"
 gem "parlour"

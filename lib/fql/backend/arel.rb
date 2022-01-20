@@ -73,26 +73,26 @@ module FQL
           if expr.name == [:self]
             arel_table
           else
-            result = expr.name.reduce({ the_joins: [], model: model, aliased_relation: nil }) do |state, relation_name|
+            result = expr.name.reduce({ joins: [], model: model, aliased_relation: nil }) do |state, relation_name|
               arel_table = state[:model].arel_table
-              assoc = model.reflect_on_association(relation_name)
+              assoc = state[:model].reflect_on_association(relation_name)
               aliased_relation = A::TableAlias.new(::Arel.sql(assoc.table_name), relation_name)
 
               {
-                the_joins: state[:the_joins] + [
+                joins: state[:joins] + [
                   arel_table
-                                               .join(aliased_relation)
-                                               .on(
-                                                 arel_table[assoc.join_foreign_key]
-                                                   .eq(aliased_relation[assoc.join_primary_key])
-                                               )
+                                       .join(aliased_relation)
+                                       .on(
+                                         arel_table[assoc.join_foreign_key]
+                                           .eq(aliased_relation[assoc.join_primary_key])
+                                       )
                 ],
                 model: assoc.class_name.constantize,
                 aliased_relation: aliased_relation
               }
             end
 
-            joins.concat(result[:the_joins])
+            joins.concat(result[:joins])
 
             result[:aliased_relation]
           end

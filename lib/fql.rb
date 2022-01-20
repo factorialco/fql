@@ -1,6 +1,7 @@
 # typed: strict
 require "zeitwerk"
 require "sorbet-runtime"
+require "byebug"
 
 loader = Zeitwerk::Loader.for_gem
 loader.inflector.inflect(
