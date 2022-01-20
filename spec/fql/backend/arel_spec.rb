@@ -139,7 +139,7 @@ RSpec.describe FQL::Backend::Arel do
             [
               'SELECT "users".* FROM "users"',
               'INNER JOIN addresses "address" ON "users"."id" = "address"."tenant_id"',
-              'INNER JOIN cities "city" ON "addresses"."city_id" = "city"."id"',
+              'INNER JOIN cities "city" ON "address"."city_id" = "city"."id"',
               'WHERE "city"."name" = \'Barcelona\''
             ].join(" ")
           )

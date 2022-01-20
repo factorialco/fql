@@ -78,19 +78,19 @@ module FQL
               assoc = state[:model].reflect_on_association(relation_name)
               raise "model #{state[:model].name} has no association #{relation_name}" if assoc.nil?
 
-              aliased_relation = A::TableAlias.new(::Arel.sql(assoc.table_name), relation_name)
+              new_aliased_relation = A::TableAlias.new(::Arel.sql(assoc.table_name), relation_name)
 
               {
                 joins: state[:joins] + [
                   arel_table
-                                       .join(aliased_relation)
+                                       .join(new_aliased_relation)
                                        .on(
-                                         arel_table[assoc.join_foreign_key]
-                                           .eq(aliased_relation[assoc.join_primary_key])
+                                         (state[:aliased_relation] || arel_table)[assoc.join_foreign_key]
+                                            .eq(new_aliased_relation[assoc.join_primary_key])
                                        )
                 ],
                 model: assoc.class_name.constantize,
-                aliased_relation: aliased_relation
+                aliased_relation: new_aliased_relation
               }
             end
 
