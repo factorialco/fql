@@ -1,5 +1,13 @@
 # FQL (Factorial Query Language)
 
+Sorbet [![Sorbet](https://badge.buildkite.com/8d6c672b005b523fb3fa6b7aa014d0ee181535f3339267147b.svg?branch=main&step=Sorbet)](https://buildkite.com/factorial/test-fql)
+
+Tests [![Tests](https://badge.buildkite.com/8d6c672b005b523fb3fa6b7aa014d0ee181535f3339267147b.svg?branch=main&step=Test)](https://buildkite.com/factorial/test-fql)
+
+Lint [![Lint](https://badge.buildkite.com/8d6c672b005b523fb3fa6b7aa014d0ee181535f3339267147b.svg?branch=main&step=Lint)](https://buildkite.com/factorial/test-fql)
+
+---
+
 A flexible, extensible query language that compiles down to Arel (to extend queries within a Rails application) or plain Ruby.
 
 ---
