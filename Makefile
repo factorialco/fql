@@ -11,4 +11,7 @@ rubocop:
 sorbet:
 	bundle exec srb tc
 
+parlour:
+	bundle exec parlour
+
 .PHONY: test lint rubocop sorbet

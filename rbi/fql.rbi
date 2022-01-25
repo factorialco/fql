@@ -13,17 +13,18 @@ module FQL
       sig { params(expr: Query::DSL::BoolExpr).returns(String) }
       def serialize(expr); end
 
-      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr)).returns(T.any(
+      sig { params(expr: T.nilable(T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr))).returns(T.any(
             T::Hash[Symbol, T.untyped],
             T::Boolean,
             String,
             Integer,
-            Date
+            Date,
+            NilClass
           )) }
       def serialize_expression(expr); end
 
       sig { params(expr: T.any(T::Hash[String, T.untyped], T::Boolean, Integer, String,
-                           Date)).returns(T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr)) }
+                           Date, NilClass)).returns(T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr, NilClass)) }
       def parse_expression(expr); end
     end
   end
@@ -32,7 +33,7 @@ module FQL
     class Arel
       extend T::Sig
       extend T::Generic
-      PlainValue = T.type_alias { T.any(String, Integer, Date) }
+      PlainValue = T.type_alias { T.any(String, Integer, Date, NilClass) }
       Attribute = T.type_alias { T.any(::Arel::Attribute, A::True, A::False) }
       Table = T.type_alias { T.any(::Arel::Table, A::TableAlias) }
       A = ::Arel::Nodes
@@ -47,7 +48,7 @@ module FQL
       def compile(expr); end
 
       sig { params(expr: T.any(Query::DSL::BoolExpr,
-                           Query::DSL::ValueExpr)).returns(T.any(A::Node, PlainValue, Table, Attribute)) }
+                           Query::DSL::ValueExpr, NilClass)).returns(T.any(A::Node, PlainValue, Table, Attribute)) }
       def compile_expression(expr); end
 
       sig { returns(T.class_of(ActiveRecord::Base)) }
@@ -73,7 +74,7 @@ module FQL
       sig { params(expr: Query::DSL::BoolExpr).returns(CompiledFunction) }
       def self.compile(expr); end
 
-      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr)).returns(String) }
+      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr, NilClass)).returns(String) }
       def self.compile_expression(expr); end
     end
   end
@@ -101,6 +102,7 @@ module FQL
 
     module DSL
       extend T::Sig
+      extend Methods
       BoolExpr = T.type_alias { T.any(Or, And, Eq, Gt, Gte, Lt, Lte, Not, Contains, MatchesRegex, T::Boolean) }
       Primitive = T.type_alias { T.any(String, Integer, Date, T::Boolean) }
       ValueExpr = T.type_alias { T.any(Attr, Rel, Var, Primitive) }
@@ -140,7 +142,7 @@ module FQL
 
       class Eq < T::Struct
         prop :lhs, ValueExpr, immutable: true
-        prop :rhs, ValueExpr, immutable: true
+        prop :rhs, T.any(ValueExpr, NilClass), immutable: true
 
       end
 
@@ -201,7 +203,7 @@ module FQL
         sig { params(name: Symbol).returns(Var) }
         def var(name); end
 
-        sig { params(lhs: ValueExpr, rhs: ValueExpr).returns(Eq) }
+        sig { params(lhs: ValueExpr, rhs: T.any(ValueExpr, NilClass)).returns(Eq) }
         def eq(lhs, rhs); end
 
         sig { params(lhs: ValueExpr, rhs: ValueExpr).returns(Gt) }
@@ -225,9 +227,6 @@ module FQL
 
       sig { params(base: Module).void }
       def self.included(base); end
-
-      sig { params(base: Module).void }
-      def self.extended(base); end
     end
   end
 end

@@ -44,7 +44,7 @@ module FQL
       # Determine equality between two values.
       class Eq < T::Struct
         const :lhs, ValueExpr
-        const :rhs, ValueExpr
+        const :rhs, T.any(ValueExpr, NilClass)
       end
 
       class Gt < T::Struct
@@ -114,7 +114,7 @@ module FQL
           Var.new(name: name)
         end
 
-        sig { params(lhs: ValueExpr, rhs: ValueExpr).returns(Eq) }
+        sig { params(lhs: ValueExpr, rhs: T.any(ValueExpr, NilClass)).returns(Eq) }
         def eq(lhs, rhs)
           Eq.new(lhs: lhs, rhs: rhs)
         end

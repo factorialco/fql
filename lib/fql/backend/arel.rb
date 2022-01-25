@@ -8,7 +8,7 @@ module FQL
       extend T::Generic
 
       A = ::Arel::Nodes
-      PlainValue = T.type_alias { T.any(String, Integer, Date) }
+      PlainValue = T.type_alias { T.any(String, Integer, Date, NilClass) }
       Attribute = T.type_alias { T.any(::Arel::Attribute, A::True, A::False) }
       Table = T.type_alias { T.any(::Arel::Table, A::TableAlias) }
 
@@ -41,12 +41,14 @@ module FQL
 
       sig do
         params(expr: T.any(Query::DSL::BoolExpr,
-                           Query::DSL::ValueExpr)).returns(T.any(A::Node, PlainValue, Table, Attribute))
+                           Query::DSL::ValueExpr, NilClass)).returns(T.any(A::Node, PlainValue, Table, Attribute))
       end
       def compile_expression(expr)
         case expr
         when true, false
           expr ? A::True.new : A::False.new
+        when nil
+          nil
         when Integer, String, Date
           expr
         when Query::DSL::And

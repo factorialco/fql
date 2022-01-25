@@ -72,6 +72,14 @@ RSpec.describe FQL::Backend::Arel do
       it "compiles to =" do
         expect(F.eq(true, false)).to compile_to('SELECT "users".* FROM "users" WHERE 1 = 0')
       end
+
+      it "accepts nil on the right hand side" do
+        expect(F.eq(true, nil)).to compile_to('SELECT "users".* FROM "users" WHERE 1 IS NULL')
+      end
+
+      it "handles IS NOT NULL" do
+        expect(F.not(F.eq(true, nil))).to compile_to('SELECT "users".* FROM "users" WHERE NOT (1 IS NULL)')
+      end
     end
 
     describe "Gt" do

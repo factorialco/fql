@@ -2,9 +2,7 @@
 require "spec_helper"
 
 RSpec.describe FQL::Serde::JSON do
-  module F
-    extend FQL::Query::DSL
-  end
+  F = FQL::Query::DSL
 
   subject { described_class.new }
 
@@ -35,7 +33,7 @@ RSpec.describe FQL::Serde::JSON do
   end
 
   it "roundtrips Eq" do
-    expect(F.eq(true, false)).to roundtrip
+    expect(F.eq(true, nil)).to roundtrip
   end
 
   it "roundtrips Gt" do

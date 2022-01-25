@@ -20,20 +20,21 @@ module FQL
 
       sig do
         params(
-          expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr)
+          expr: T.nilable(T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr))
         ).returns(
           T.any(
             T::Hash[Symbol, T.untyped],
             T::Boolean,
             String,
             Integer,
-            Date
+            Date,
+            NilClass
           )
         )
       end
       def serialize_expression(expr)
         case expr
-        when true, false, Integer, String
+        when nil, true, false, Integer, String
           expr
         when Date
           expr.to_s
@@ -71,7 +72,7 @@ module FQL
 
       sig do
         params(expr: T.any(T::Hash[String, T.untyped], T::Boolean, Integer, String,
-                           Date)).returns(T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr))
+                           Date, NilClass)).returns(T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr, NilClass))
       end
       def parse_expression(expr)
         if expr.is_a?(Hash) && expr.key?("op")
@@ -82,7 +83,7 @@ module FQL
             Query::DSL::And.new(lhs: lhs, rhs: rhs)
           when "eq"
             lhs = T.cast(parse_expression(expr["lhs"]), Query::DSL::ValueExpr)
-            rhs = T.cast(parse_expression(expr["rhs"]), Query::DSL::ValueExpr)
+            rhs = T.cast(parse_expression(expr["rhs"]), T.nilable(Query::DSL::ValueExpr))
             Query::DSL::Eq.new(lhs: lhs, rhs: rhs)
           when "or"
             lhs = T.cast(parse_expression(expr["lhs"]), Query::DSL::BoolExpr)

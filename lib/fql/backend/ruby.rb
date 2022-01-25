@@ -18,11 +18,13 @@ module FQL
         RubyVM::InstructionSequence.compile(code).eval
       end
 
-      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr)).returns(String) }
+      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr, NilClass)).returns(String) }
       def self.compile_expression(expr)
         case expr
         when true, false, Integer
           expr.to_s
+        when nil
+          "nil"
         when String
           "\"#{expr}\""
         when Date
@@ -37,9 +39,8 @@ module FQL
                                                                                              Query::DSL::BoolExpr))})"
         when Query::DSL::Not
           "!#{compile_expression(T.let(expr.expr, Query::DSL::BoolExpr))}"
-        when Query::DSL::Eq, Query::DSL::Gt, Query::DSL::Gte, Query::DSL::Lt, Query::DSL::Lte
+        when Query::DSL::Gt, Query::DSL::Gte, Query::DSL::Lt, Query::DSL::Lte
           operator = case expr
-                     when Query::DSL::Eq then "=="
                      when Query::DSL::Gt then ">"
                      when Query::DSL::Gte then ">="
                      when Query::DSL::Lt then "<"
@@ -50,6 +51,8 @@ module FQL
           rhs = compile_expression(T.let(expr.rhs, Query::DSL::ValueExpr))
 
           "(#{lhs} #{operator} #{rhs})"
+        when Query::DSL::Eq
+          "(#{compile_expression(expr.lhs)} == #{compile_expression(expr.rhs)})"
         when Query::DSL::Contains
           "#{compile_expression(expr.lhs)}.include?(#{compile_expression(expr.rhs)})"
         when Query::DSL::MatchesRegex
