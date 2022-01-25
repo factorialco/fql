@@ -11,9 +11,11 @@ module FQL
       @expr = expr
     end
 
-    sig { params(input: String).returns(T.attached_class) }
+    sig { params(input: String).returns(Outcome[T.attached_class]) }
     def self.from_json(input)
-      new(Serde::JSON.new.deserialize(input))
+      Serde::JSON.new.deserialize(input).map do |parsed|
+        new(parsed)
+      end
     end
 
     sig { returns(Backend::Ruby::CompiledFunction) }

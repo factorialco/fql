@@ -2,12 +2,57 @@
 module FQL
   VERSION = "0.1.0".freeze
 
+  class Outcome
+    extend T::Sig
+    extend T::Generic
+    Elem = type_member
+
+    sig { type_parameters(:T).params(value: T.type_parameter(:T)).returns(Outcome[T.type_parameter(:T)]) }
+    def self.ok(value); end
+
+    sig { params(message: String, exception: StandardError).returns(Outcome[T.untyped]) }
+    def self.error(message, exception); end
+
+    sig { params(obj: T.any(Ok[Elem], Error)).void }
+    def initialize(obj); end
+
+    sig { returns(T::Boolean) }
+    def ok?; end
+
+    sig { returns(T::Boolean) }
+    def error?; end
+
+    sig { returns(T.nilable(Error)) }
+    def error; end
+
+    sig { returns(T.nilable(Elem)) }
+    def value; end
+
+    sig { type_parameters(:U).params(_block: T.proc.params(arg0: Elem).returns(T.type_parameter(:U))).returns(Outcome[T.type_parameter(:U)]) }
+    def map(&_block); end
+
+    class Ok < T::Struct
+      prop :value, Elem, immutable: true
+
+      extend T::Sig
+      extend T::Generic
+      Elem = type_member
+    end
+
+    class Error < T::Struct
+      prop :message, String, immutable: true
+      prop :exception, StandardError, immutable: true
+
+      extend T::Sig
+    end
+  end
+
   module Serde
     class JSON
       extend T::Sig
       extend T::Generic
 
-      sig { params(input: String).returns(Query::DSL::BoolExpr) }
+      sig { params(input: String).returns(Outcome[Query::DSL::BoolExpr]) }
       def deserialize(input); end
 
       sig { params(expr: Query::DSL::BoolExpr).returns(String) }
@@ -120,7 +165,7 @@ module FQL
     sig { params(expr: DSL::BoolExpr).void }
     def initialize(expr); end
 
-    sig { params(input: String).returns(T.attached_class) }
+    sig { params(input: String).returns(Outcome[T.attached_class]) }
     def self.from_json(input); end
 
     sig { returns(Backend::Ruby::CompiledFunction) }

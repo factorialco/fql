@@ -10,14 +10,18 @@ RSpec.describe FQL::Serde::JSON do
     match do |expression|
       serialized = subject.serialize(expression)
       subject.serialize(
-        subject.deserialize(
+        T.must(subject.deserialize(
           serialized
-        )
+        ).value)
       ) == serialized
     end
     failure_message do |expression|
       "expected #{expression.inspect} to roundtrip, but it did not (it serialized to '#{subject.serialize(expression)}')"
     end
+  end
+
+  it "fails on malformed input" do
+    expect(subject.deserialize("foo").error?).to be(true)
   end
 
   it "roundtrips And" do

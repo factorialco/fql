@@ -7,10 +7,12 @@ module FQL
       extend T::Sig
       extend T::Generic
 
-      sig { params(input: String).returns(Query::DSL::BoolExpr) }
+      sig { params(input: String).returns(Outcome[Query::DSL::BoolExpr]) }
       def deserialize(input)
         m = T.let(::JSON.parse(input), T::Hash[String, T.untyped])
-        T.cast(parse_expression(m), Query::DSL::BoolExpr)
+        Outcome.ok(T.cast(parse_expression(m), Query::DSL::BoolExpr))
+      rescue ::JSON::ParserError => e
+        Outcome.error("malformed JSON", e)
       end
 
       sig { params(expr: Query::DSL::BoolExpr).returns(String) }
