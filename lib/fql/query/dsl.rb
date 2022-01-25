@@ -155,10 +155,7 @@ module FQL
         base.include(Methods)
       end
 
-      sig { params(base: Module).void }
-      def self.extended(base)
-        base.extend(Methods)
-      end
+      extend Methods
     end
   end
 end

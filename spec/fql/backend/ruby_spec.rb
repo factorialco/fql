@@ -2,9 +2,7 @@
 require "spec_helper"
 
 RSpec.describe FQL::Backend::Ruby do
-  module F
-    extend FQL::Query::DSL
-  end
+  F = FQL::Query::DSL
 
   matcher :compile_to do |expected|
     match do |expression|
