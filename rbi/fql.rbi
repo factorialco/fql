@@ -29,6 +29,41 @@ module FQL
     end
   end
 
+  class Validation
+    extend T::Sig
+
+    class Result < T::Struct
+      prop :errors, T::Array[String], immutable: true
+
+      extend T::Sig
+
+      sig { returns(T::Boolean) }
+      def valid?; end
+    end
+
+    sig { params(model: T.class_of(ActiveRecord::Base), expr: Query::DSL::BoolExpr).returns(Result) }
+    def self.validate(model, expr); end
+
+    sig { params(model: T.class_of(ActiveRecord::Base), expr: Query::DSL::BoolExpr).void }
+    def initialize(model, expr); end
+
+    sig { returns(Result) }
+    def validate; end
+
+    sig { params(expr: T.nilable(T.any(Query::DSL::BoolExpr,
+                                   Query::DSL::ValueExpr))).returns(T.nilable(T.class_of(ActiveRecord::Base))) }
+    def validate_expression!(expr); end
+
+    sig { returns(T.class_of(ActiveRecord::Base)) }
+    attr_reader :model
+
+    sig { returns(Query::DSL::BoolExpr) }
+    attr_reader :expr
+
+    sig { returns(T::Array[String]) }
+    attr_reader :errors
+  end
+
   module Backend
     class Arel
       extend T::Sig
@@ -96,6 +131,9 @@ module FQL
 
     sig { returns(String) }
     def to_json; end
+
+    sig { params(model: T.class_of(ActiveRecord::Base)).returns(Validation::Result) }
+    def validate(model); end
 
     sig { returns(DSL::BoolExpr) }
     attr_reader :expr

@@ -2,7 +2,7 @@
 require "spec_helper"
 
 RSpec.describe FQL::Backend::Ruby do
-  F = FQL::Query::DSL
+  F = FQL::Query::DSL unless defined?(F)
 
   matcher :compile_to do |expected|
     match do |expression|

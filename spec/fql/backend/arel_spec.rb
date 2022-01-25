@@ -2,7 +2,7 @@
 require "spec_helper"
 
 RSpec.describe FQL::Backend::Arel do
-  F = FQL::Query::DSL
+  F = FQL::Query::DSL unless defined?(F)
 
   matcher :compile_to do |expected|
     match do |expression|
@@ -20,20 +20,6 @@ RSpec.describe FQL::Backend::Arel do
     failure_message do |expression|
       "expected #{expression.inspect} to compile to \"#{expected}\", but got \"#{subject.compile_expression(expression)}\" instead"
     end
-  end
-
-  class User < ActiveRecord::Base
-    has_one :address, foreign_key: :tenant_id
-    has_one :city, through: :address
-  end
-
-  class Address < ActiveRecord::Base
-    belongs_to :user, foreign_key: :tenant_id
-    belongs_to :city
-  end
-
-  class City < ActiveRecord::Base
-    has_many :addresses
   end
 
   subject { described_class.new(User, {}) }

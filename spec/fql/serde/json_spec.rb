@@ -2,7 +2,7 @@
 require "spec_helper"
 
 RSpec.describe FQL::Serde::JSON do
-  F = FQL::Query::DSL
+  F = FQL::Query::DSL unless defined?(F)
 
   subject { described_class.new }
 

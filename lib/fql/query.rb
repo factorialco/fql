@@ -31,6 +31,11 @@ module FQL
       Serde::JSON.new.serialize(expr)
     end
 
+    sig { params(model: T.class_of(ActiveRecord::Base)).returns(Validation::Result) }
+    def validate(model)
+      Validation.validate(model, expr)
+    end
+
     private
 
     sig { returns(DSL::BoolExpr) }

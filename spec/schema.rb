@@ -24,3 +24,17 @@ ActiveRecord::Schema.define do
     t.timestamps
   end
 end
+
+class User < ActiveRecord::Base
+  has_one :address, foreign_key: :tenant_id
+  has_one :city, through: :address
+end
+
+class Address < ActiveRecord::Base
+  belongs_to :user, foreign_key: :tenant_id
+  belongs_to :city
+end
+
+class City < ActiveRecord::Base
+  has_many :addresses
+end
