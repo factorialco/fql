@@ -22,6 +22,8 @@ export PRINT_HELP_PYSCRIPT # End of python section
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
+all: test lint ## Run tests and all lints
+
 test: ## Run the tests
 	bundle exec rspec
 
