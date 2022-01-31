@@ -3,7 +3,7 @@ docker-compose#v3.7.0: &compose_config
   config: .buildkite/docker-compose.yaml
 steps:
   - label: Sorbet
-    command: srb tc
+    command: make sorbet
     agents:
       queue: test
     plugins:
@@ -11,14 +11,14 @@ steps:
         <<: *compose_config
   - wait
   - label: Lint
-    command: rubocop
+    command: make lint
     agents:
       queue: test
     plugins:
       docker-compose#v3.7.0:
         <<: *compose_config
   - label: Test
-    command: rspec
+    command: make test
     agents:
       queue: test
     plugins:
