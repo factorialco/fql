@@ -1,0 +1,46 @@
+en:
+  fql:
+    either: "EITHER (%{left}) OR (%{right})"
+    neither: "NEITHER (%{left}) NOR (%{right})"
+    both: "BOTH (%{left}) AND (%{right})"
+    not_both: "NOT BOTH (%{left}) AND (%{right})"
+
+    equals: "%{left} equals %{right}"
+    does_not_equal: "%{left} does not equal %{right}"
+    is_empty: "%{noun} is empty"
+    is_not_empty: "%{noun} is not empty"
+
+    greater_than: "%{left} is greater than %{right}"
+    greater_than_or_equals: "%{left} is greater than (or equals) %{right}"
+    less_than: "%{left} is less than %{right}"
+    less_than_or_equals: "%{left} is less than (or equals) %{right}"
+  
+    not_greater_than: "%{left} is not greater than %{right}"
+    not_greater_than_or_equals: "%{left} is not greater than (or equals) %{right}"
+    not_less_than: "%{left} is NOT less than %{right}"
+    not_less_than_or_equals: "%{left} is not less than (or equals) %{right}"
+
+    contains: "%{left} contains %{right}"
+    does_not_contain: "%{left} does not contain %{right}"
+
+    matches: "%{left} matches %{right}"
+    does_not_match: "%{left} does not match %{right}"
+
+    genitive: "of the %{noun}"
+    
+    own_attribute: "their %{name}"
+    attribute: "the %{name} %{owner}"
+
+    variable: "a given %{name}"
+
+    attributes:
+      username: 'username'
+      property: 'property'
+      address: 'address'
+      location: 'location'
+      threshold: 'threshold'
+      country: 'country'
+      amount: 'amount'
+      name: 'name'
+      salary: 'salary'
+      city: 'city'

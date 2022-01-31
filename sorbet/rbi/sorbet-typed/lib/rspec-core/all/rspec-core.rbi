@@ -5,7 +5,7 @@
 #
 #   https://github.com/sorbet/sorbet-typed/edit/master/lib/rspec-core/all/rspec-core.rbi
 #
-# typed: strict
+# typed: true
 
 module RSpec::Core::ShellEscape
   def conditionally_quote(id); end

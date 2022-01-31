@@ -33,6 +33,11 @@ module FQL
       Serde::JSON.new.serialize(expr)
     end
 
+    sig { returns(String) }
+    def to_words
+      Backend::Words.compile(expr)
+    end
+
     sig { params(model: T.class_of(ActiveRecord::Base)).returns(Validation::Result) }
     def validate(model)
       Validation.validate(model, expr)

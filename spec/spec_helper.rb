@@ -22,6 +22,8 @@ end
 require "fql"
 require "active_record"
 
+I18n.load_path << Dir[File.expand_path("#{File.dirname(__FILE__)}/en.yml")]
+
 ActiveRecord::Base.establish_connection adapter: "sqlite3", database: ":memory:"
 
 load "#{File.dirname(__FILE__)}/schema.rb"
