@@ -45,6 +45,17 @@ en:
       salary: 'salary'
       city: 'city'
 
+      username_html: 'username'
+      property_html: 'property'
+      address_html: 'address'
+      location_html: 'location'
+      threshold_html: 'threshold'
+      country_html: 'country'
+      amount_html: 'amount'
+      name_html: 'name'
+      salary_html: 'salary'
+      city_html: 'city'
+
     either_html: "<strong>EITHER</strong> (%{left}) <strong>OR</strong> (%{right})"
     neither_html: "NEITHER (%{left}) NOR (%{right})"
     both_html: "BOTH (%{left}) AND (%{right})"
@@ -77,15 +88,3 @@ en:
     attribute_html: "the %{name} %{owner}"
 
     variable_html: "a given %{name}"
-
-    attributes_html:
-      username_html: 'username'
-      property_html: 'property'
-      address_html: 'address'
-      location_html: 'location'
-      threshold_html: 'threshold'
-      country_html: 'country'
-      amount_html: 'amount'
-      name_html: 'name'
-      salary_html: 'salary'
-      city_html: 'city'

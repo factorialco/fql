@@ -31,33 +31,33 @@ module FQL
           t(
             suffix,
             negated ? "not_both" : "both",
-            left: compile_expression(expr.lhs),
-            right: compile_expression(expr.rhs)
+            left: compile_expression(expr.lhs, suffix: suffix),
+            right: compile_expression(expr.rhs, suffix: suffix)
           )
         when Query::DSL::Or
           t(
             suffix,
             negated ? "neither" : "either",
-            left: compile_expression(expr.lhs),
-            right: compile_expression(expr.rhs)
+            left: compile_expression(expr.lhs, suffix: suffix),
+            right: compile_expression(expr.rhs, suffix: suffix)
           )
         when Query::DSL::Not
-          compile_expression(expr.expr, negated: true)
+          compile_expression(expr.expr, negated: true, suffix: suffix)
         when Query::DSL::Eq
           if expr.rhs.nil?
             key = negated ? "is_not_empty" : "is_empty"
             t(
               suffix,
               key,
-              noun: compile_expression(expr.lhs)
+              noun: compile_expression(expr.lhs, suffix: suffix)
             )
           else
             key = negated ? "does_not_equal" : "equals"
             t(
               suffix,
               key,
-              left: compile_expression(expr.lhs),
-              right: compile_expression(T.cast(expr.rhs, Query::DSL::ValueExpr))
+              left: compile_expression(expr.lhs, suffix: suffix),
+              right: compile_expression(T.cast(expr.rhs, Query::DSL::ValueExpr), suffix: suffix)
             )
           end
         when Query::DSL::Gt, Query::DSL::Gte, Query::DSL::Lt, Query::DSL::Lte
@@ -73,22 +73,22 @@ module FQL
           t(
             suffix,
             operator,
-            left: compile_expression(expr.lhs),
-            right: compile_expression(expr.rhs)
+            left: compile_expression(expr.lhs, suffix: suffix),
+            right: compile_expression(expr.rhs, suffix: suffix)
           )
         when Query::DSL::Contains
           t(
             suffix,
             negated ? "does_not_contain" : "contains",
-            left: compile_expression(expr.lhs),
-            right: compile_expression(expr.rhs)
+            left: compile_expression(expr.lhs, suffix: suffix),
+            right: compile_expression(expr.rhs, suffix: suffix)
           )
         when Query::DSL::MatchesRegex
           t(
             suffix,
             negated ? "does_not_match" : "matches",
-            left: compile_expression(expr.lhs),
-            right: compile_expression(expr.rhs)
+            left: compile_expression(expr.lhs, suffix: suffix),
+            right: compile_expression(expr.rhs, suffix: suffix)
           )
         when Query::DSL::Rel
           expr.name.reverse.map do |noun|
@@ -110,7 +110,7 @@ module FQL
               suffix,
               "attribute",
               name: t(suffix, "attributes.#{expr.name}"),
-              owner: compile_expression(expr.target)
+              owner: compile_expression(expr.target, suffix: suffix)
             )
           end
         when Query::DSL::Var
