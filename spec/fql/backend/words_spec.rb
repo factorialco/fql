@@ -39,6 +39,14 @@ RSpec.describe FQL::Backend::Words do
         "EITHER (the country of the location equals \"es\") OR (the amount of the salary is greater than a given threshold)"
       )
     end
+
+    context "with a special suffix" do
+      it "compiles a complex query to natural language accordingly" do
+        expect(described_class.compile(complex_query, suffix: "html")).to eq(
+          "<strong>EITHER</strong> (the country of the location equals \"es\") <strong>OR</strong> (the amount of the salary is greater than a given threshold)"
+        )
+      end
+    end
   end
 
   describe ".compile_expression" do

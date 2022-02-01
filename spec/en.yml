@@ -44,3 +44,48 @@ en:
       name: 'name'
       salary: 'salary'
       city: 'city'
+
+    either_html: "<strong>EITHER</strong> (%{left}) <strong>OR</strong> (%{right})"
+    neither_html: "NEITHER (%{left}) NOR (%{right})"
+    both_html: "BOTH (%{left}) AND (%{right})"
+    not_both_html: "NOT BOTH (%{left}) AND (%{right})"
+
+    equals_html: "%{left} equals %{right}"
+    does_not_equal_html: "%{left} does not equal %{right}"
+    is_empty_html: "%{noun} is empty"
+    is_not_empty_html: "%{noun} is not empty"
+
+    greater_than_html: "%{left} is greater than %{right}"
+    greater_than_or_equals_html: "%{left} is greater than (or equals) %{right}"
+    less_than_html: "%{left} is less than %{right}"
+    less_than_or_equals_html: "%{left} is less than (or equals) %{right}"
+
+    not_greater_than_html: "%{left} is not greater than %{right}"
+    not_greater_than_or_equals_html: "%{left} is not greater than (or equals) %{right}"
+    not_less_than_html: "%{left} is NOT less than %{right}"
+    not_less_than_or_equals_html: "%{left} is not less than (or equals) %{right}"
+
+    contains_html: "%{left} contains %{right}"
+    does_not_contain_html: "%{left} does not contain %{right}"
+
+    matches_html: "%{left} matches %{right}"
+    does_not_match_html: "%{left} does not match %{right}"
+
+    genitive_html: "of the %{noun}"
+
+    own_attribute_html: "their %{name}"
+    attribute_html: "the %{name} %{owner}"
+
+    variable_html: "a given %{name}"
+
+    attributes_html:
+      username_html: 'username'
+      property_html: 'property'
+      address_html: 'address'
+      location_html: 'location'
+      threshold_html: 'threshold'
+      country_html: 'country'
+      amount_html: 'amount'
+      name_html: 'name'
+      salary_html: 'salary'
+      city_html: 'city'

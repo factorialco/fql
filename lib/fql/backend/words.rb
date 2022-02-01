@@ -5,13 +5,19 @@ module FQL
     class Words
       extend T::Sig
 
-      sig { params(expr: Query::DSL::BoolExpr).returns(String) }
-      def self.compile(expr)
-        compile_expression(expr)
+      sig { params(expr: Query::DSL::BoolExpr, suffix: T.nilable(String)).returns(String) }
+      def self.compile(expr, suffix: nil)
+        compile_expression(expr, negated: false, suffix: suffix)
       end
 
-      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr), negated: T::Boolean).returns(String) }
-      def self.compile_expression(expr, negated: false)
+      sig do
+        params(
+          expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr),
+          negated: T::Boolean,
+          suffix: T.nilable(String)
+        ).returns(String)
+      end
+      def self.compile_expression(expr, negated: false, suffix: nil)
         case expr
         when true, false, Integer
           expr.to_s
@@ -22,14 +28,16 @@ module FQL
         when Date
           expr.strftime("%B %d, %Y")
         when Query::DSL::And
-          I18n.t(
-            negated ? "fql.not_both" : "fql.both",
+          t(
+            suffix,
+            negated ? "not_both" : "both",
             left: compile_expression(expr.lhs),
             right: compile_expression(expr.rhs)
           )
         when Query::DSL::Or
-          I18n.t(
-            negated ? "fql.neither" : "fql.either",
+          t(
+            suffix,
+            negated ? "neither" : "either",
             left: compile_expression(expr.lhs),
             right: compile_expression(expr.rhs)
           )
@@ -37,14 +45,16 @@ module FQL
           compile_expression(expr.expr, negated: true)
         when Query::DSL::Eq
           if expr.rhs.nil?
-            key = negated ? "fql.is_not_empty" : "fql.is_empty"
-            I18n.t(
+            key = negated ? "is_not_empty" : "is_empty"
+            t(
+              suffix,
               key,
               noun: compile_expression(expr.lhs)
             )
           else
-            key = negated ? "fql.does_not_equal" : "fql.equals"
-            I18n.t(
+            key = negated ? "does_not_equal" : "equals"
+            t(
+              suffix,
               key,
               left: compile_expression(expr.lhs),
               right: compile_expression(T.cast(expr.rhs, Query::DSL::ValueExpr))
@@ -60,51 +70,66 @@ module FQL
 
           operator = "not_#{operator}" if negated
 
-          I18n.t(
-            "fql.#{operator}",
+          t(
+            suffix,
+            operator,
             left: compile_expression(expr.lhs),
             right: compile_expression(expr.rhs)
           )
         when Query::DSL::Contains
-          I18n.t(
-            negated ? "fql.does_not_contain" : "fql.contains",
+          t(
+            suffix,
+            negated ? "does_not_contain" : "contains",
             left: compile_expression(expr.lhs),
             right: compile_expression(expr.rhs)
           )
         when Query::DSL::MatchesRegex
-          I18n.t(
-            negated ? "fql.does_not_match" : "fql.matches",
+          t(
+            suffix,
+            negated ? "does_not_match" : "matches",
             left: compile_expression(expr.lhs),
             right: compile_expression(expr.rhs)
           )
         when Query::DSL::Rel
           expr.name.reverse.map do |noun|
-            I18n.t(
-              "fql.genitive",
-              noun: I18n.t("fql.attributes.#{noun}")
+            t(
+              suffix,
+              "genitive",
+              noun: t(suffix, "attributes.#{noun}")
             )
           end.join(" ")
         when Query::DSL::Attr
           if expr.target.name == [:self]
-            I18n.t(
-              "fql.own_attribute",
-              name: I18n.t("fql.attributes.#{expr.name}")
+            t(
+              suffix,
+              "own_attribute",
+              name: t(suffix, "attributes.#{expr.name}")
             )
           else
-            I18n.t(
-              "fql.attribute",
-              name: I18n.t("fql.attributes.#{expr.name}"),
+            t(
+              suffix,
+              "attribute",
+              name: t(suffix, "attributes.#{expr.name}"),
               owner: compile_expression(expr.target)
             )
           end
         when Query::DSL::Var
-          I18n.t(
-            "fql.variable",
-            name: I18n.t("fql.attributes.#{expr.name}")
+          t(
+            suffix,
+            "variable",
+            name: t(suffix, "attributes.#{expr.name}")
           )
         else
           T.absurd(expr)
         end
+      end
+
+      sig { params(suffix: T.nilable(String), key: String, kwargs: String).returns(String) }
+      def self.t(suffix, key, **kwargs)
+        I18n.t(
+          suffix.nil? ? "fql.#{key}" : "fql.#{key}_#{suffix}",
+          **T.unsafe(kwargs)
+        )
       end
     end
   end

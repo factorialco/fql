@@ -1,9 +1,9 @@
 PATH
   remote: .
   specs:
-    fql (0.1.0)
+    fql (0.1.2)
       activerecord (~> 6.0)
-      i18n (~> 1.9)
+      i18n (~> 1.8)
       sorbet-rails (~> 0.7.3)
       sorbet-runtime (~> 0.5)
       zeitwerk (~> 2.5.3)
