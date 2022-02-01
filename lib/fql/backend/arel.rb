@@ -36,7 +36,7 @@ module FQL
         where_clause = compile_expression(expr)
         joins.reduce(model) do |acc, join|
           acc.joins(join.join_sources)
-        end.where(where_clause)
+        end.where(where_clause).distinct
       end
 
       sig do
