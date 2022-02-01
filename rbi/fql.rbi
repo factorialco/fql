@@ -1,6 +1,6 @@
 # typed: strong
 module FQL
-  VERSION = "0.1.0".freeze
+  VERSION = "0.1.3".freeze
 
   class Outcome
     extend T::Sig
@@ -157,6 +157,19 @@ module FQL
       sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr, NilClass)).returns(String) }
       def self.compile_expression(expr); end
     end
+
+    class Words
+      extend T::Sig
+
+      sig { params(expr: Query::DSL::BoolExpr, suffix: T.nilable(String)).returns(String) }
+      def self.compile(expr, suffix: nil); end
+
+      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr), negated: T::Boolean, suffix: T.nilable(String)).returns(String) }
+      def self.compile_expression(expr, negated: false, suffix: nil); end
+
+      sig { params(suffix: T.nilable(String), key: String, kwargs: String).returns(String) }
+      def self.t(suffix, key, **kwargs); end
+    end
   end
 
   class Query
@@ -176,6 +189,9 @@ module FQL
 
     sig { returns(String) }
     def to_json; end
+
+    sig { params(suffix: T.nilable(String)).returns(String) }
+    def to_words(suffix: nil); end
 
     sig { params(model: T.class_of(ActiveRecord::Base)).returns(Validation::Result) }
     def validate(model); end

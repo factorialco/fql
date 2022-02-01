@@ -33,9 +33,9 @@ module FQL
       Serde::JSON.new.serialize(expr)
     end
 
-    sig { returns(String) }
-    def to_words
-      Backend::Words.compile(expr)
+    sig { params(suffix: T.nilable(String)).returns(String) }
+    def to_words(suffix: nil)
+      Backend::Words.compile(expr, suffix: suffix)
     end
 
     sig { params(model: T.class_of(ActiveRecord::Base)).returns(Validation::Result) }
