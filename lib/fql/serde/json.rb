@@ -56,13 +56,13 @@ module FQL
         when Query::DSL::Contains
           { op: "contains", lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs) }
         when Query::DSL::Rel
-          { op: "rel", name: expr.name }
+          { op: "rel", name: expr.name.map(&:to_s) }
         when Query::DSL::Attr
-          { op: "attr", target: serialize_expression(expr.target), name: expr.name }
+          { op: "attr", target: serialize_expression(expr.target), name: expr.name.to_s }
         when Query::DSL::Var
-          { op: "var", name: expr.name }
+          { op: "var", name: expr.name.to_s }
         when Query::DSL::MatchesRegex
-          { op: "matches_regex", lhs: serialize_expression(expr.lhs), rhs: expr.rhs }
+          { op: "matches_regex", lhs: serialize_expression(expr.lhs), rhs: expr.rhs.to_s }
         else
           T.absurd(expr)
         end
