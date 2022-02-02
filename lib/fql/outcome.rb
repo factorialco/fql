@@ -17,10 +17,10 @@ module FQL
     end
 
     sig do
-      params(message: String, exception: StandardError)
+      params(message: String, exception: T.nilable(StandardError))
         .returns(Outcome[T.untyped])
     end
-    def self.error(message, exception)
+    def self.error(message, exception=nil)
       new(Error.new(message: message, exception: exception))
     end
 
@@ -49,6 +49,13 @@ module FQL
       @obj.value if @obj.is_a?(Ok)
     end
 
+    sig { returns(Elem) }
+    def unwrap!
+      return @obj.value if @obj.is_a?(Ok)
+
+      raise (T.must(error).exception || StandardError.new), T.must(error).message
+    end
+
     sig do
       type_parameters(:U)
         .params(_block: T.proc.params(arg0: Elem).returns(T.type_parameter(:U)))
@@ -61,6 +68,17 @@ module FQL
       else
         self
       end
+    end
+
+    sig do
+      type_parameters(:U)
+        .params(_block: T.proc.params(arg0: Elem).returns(Outcome[T.untyped]))
+        .returns(Outcome[T.untyped])
+    end
+    def bind(&_block)
+      return yield @obj.value if @obj.is_a?(Ok)
+
+      Outcome.new(@obj)
     end
 
     class Ok < T::Struct
@@ -76,7 +94,7 @@ module FQL
       extend T::Sig
 
       const :message, String
-      const :exception, StandardError
+      const :exception, T.nilable(StandardError)
     end
 
     private_constant :Ok, :Error

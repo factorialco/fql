@@ -1,5 +1,6 @@
 # typed: strict
 require "json"
+require "active_support/core_ext/hash/keys"
 
 module FQL
   module Serde
@@ -7,17 +8,14 @@ module FQL
       extend T::Sig
       extend T::Generic
 
-      sig { params(input: String).returns(Outcome[Query::DSL::BoolExpr]) }
+      sig { params(input: T::Hash[T.any(String, Symbol), T.untyped]).returns(Outcome[Query::DSL::BoolExpr]) }
       def deserialize(input)
-        m = T.let(::JSON.parse(input), T::Hash[String, T.untyped])
-        Outcome.ok(T.cast(parse_expression(m), Query::DSL::BoolExpr))
-      rescue ::JSON::ParserError => e
-        Outcome.error("malformed JSON", e)
+        parse_expression(input.deep_symbolize_keys).map { |parsed| T.cast(parsed, Query::DSL::BoolExpr) }
       end
 
-      sig { params(expr: Query::DSL::BoolExpr).returns(String) }
+      sig { params(expr: Query::DSL::BoolExpr).returns(T::Hash[Symbol, T.untyped]) }
       def serialize(expr)
-        ::JSON.generate(serialize_expression(expr))
+        T.cast(serialize_expression(expr), T::Hash[Symbol, T.untyped])
       end
 
       sig do
@@ -73,64 +71,86 @@ module FQL
       private
 
       sig do
-        params(expr: T.any(T::Hash[String, T.untyped], T::Boolean, Integer, String,
-                           Date, NilClass)).returns(T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr, NilClass))
+        params(expr: T.any(T::Hash[Symbol, T.untyped], T::Boolean, Integer, String,
+                           Date, NilClass)).returns(Outcome[T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr,
+                                                                  NilClass)])
       end
       def parse_expression(expr)
-        if expr.is_a?(Hash) && expr.key?("op")
-          case expr["op"]
+        if expr.is_a?(Hash) && expr.key?(:op)
+          case expr[:op]
           when "and"
-            lhs = T.cast(parse_expression(expr["lhs"]), Query::DSL::BoolExpr)
-            rhs = T.cast(parse_expression(expr["rhs"]), Query::DSL::BoolExpr)
-            Query::DSL::And.new(lhs: lhs, rhs: rhs)
+            parse_expression(expr[:lhs]).bind do |lhs|
+              parse_expression(expr[:rhs]).map do |rhs|
+                lhs = T.cast(lhs, Query::DSL::BoolExpr)
+                rhs = T.cast(rhs, Query::DSL::BoolExpr)
+                Query::DSL::And.new(lhs: lhs, rhs: rhs)
+              end
+            end
           when "eq"
-            lhs = T.cast(parse_expression(expr["lhs"]), Query::DSL::ValueExpr)
-            rhs = T.cast(parse_expression(expr["rhs"]), T.nilable(Query::DSL::ValueExpr))
-            Query::DSL::Eq.new(lhs: lhs, rhs: rhs)
+            parse_expression(expr[:lhs]).bind do |lhs|
+              parse_expression(expr[:rhs]).map do |rhs|
+                lhs = T.cast(lhs, Query::DSL::ValueExpr)
+                rhs = T.cast(rhs, T.nilable(Query::DSL::ValueExpr))
+                Query::DSL::Eq.new(lhs: lhs, rhs: rhs)
+              end
+            end
           when "or"
-            lhs = T.cast(parse_expression(expr["lhs"]), Query::DSL::BoolExpr)
-            rhs = T.cast(parse_expression(expr["rhs"]), Query::DSL::BoolExpr)
-            Query::DSL::Or.new(lhs: lhs, rhs: rhs)
+            parse_expression(expr[:lhs]).bind do |lhs|
+              parse_expression(expr[:rhs]).map do |rhs|
+                lhs = T.cast(lhs, Query::DSL::BoolExpr)
+                rhs = T.cast(rhs, Query::DSL::BoolExpr)
+                Query::DSL::Or.new(lhs: lhs, rhs: rhs)
+              end
+            end
           when "not"
-            expr = T.cast(parse_expression(expr["expr"]), Query::DSL::BoolExpr)
-            Query::DSL::Not.new(expr: expr)
-          when "gt"
-            lhs = T.cast(parse_expression(expr["lhs"]), Query::DSL::ValueExpr)
-            rhs = T.cast(parse_expression(expr["rhs"]), Query::DSL::ValueExpr)
-            Query::DSL::Gt.new(lhs: lhs, rhs: rhs)
-          when "gte"
-            lhs = T.cast(parse_expression(expr["lhs"]), Query::DSL::ValueExpr)
-            rhs = T.cast(parse_expression(expr["rhs"]), Query::DSL::ValueExpr)
-            Query::DSL::Gte.new(lhs: lhs, rhs: rhs)
-          when "lt"
-            lhs = T.cast(parse_expression(expr["lhs"]), Query::DSL::ValueExpr)
-            rhs = T.cast(parse_expression(expr["rhs"]), Query::DSL::ValueExpr)
-            Query::DSL::Lt.new(lhs: lhs, rhs: rhs)
-          when "lte"
-            lhs = T.cast(parse_expression(expr["lhs"]), Query::DSL::ValueExpr)
-            rhs = T.cast(parse_expression(expr["rhs"]), Query::DSL::ValueExpr)
-            Query::DSL::Lte.new(lhs: lhs, rhs: rhs)
+            parse_expression(expr[:expr]).map do |expression|
+              expression = T.cast(expression, Query::DSL::BoolExpr)
+              Query::DSL::Not.new(expr: expression)
+            end
+          when "gt", "gte", "lt", "lte"
+            parse_expression(expr[:lhs]).bind do |lhs|
+              parse_expression(expr[:rhs]).map do |rhs|
+                lhs = T.cast(lhs, Query::DSL::ValueExpr)
+                rhs = T.cast(rhs, Query::DSL::ValueExpr)
+                T.must(case expr[:op]
+                       when "gt"
+                         Query::DSL::Gt
+                       when "gte"
+                         Query::DSL::Gte
+                       when "lt"
+                         Query::DSL::Lt
+                       when "lte"
+                         Query::DSL::Lte
+                       end).new(lhs: lhs, rhs: rhs)
+              end
+            end
           when "rel"
-            Query::DSL::Rel.new(name: expr["name"].map(&:to_sym))
+            Outcome.ok(Query::DSL::Rel.new(name: expr[:name].map(&:to_sym)))
           when "attr"
-            target = T.cast(parse_expression(expr["target"]), Query::DSL::Rel)
-            Query::DSL::Attr.new(target: target, name: expr["name"].to_sym)
+            parse_expression(expr[:target]).map do |target|
+              target = T.cast(target, Query::DSL::Rel)
+              Query::DSL::Attr.new(target: target, name: expr[:name].to_sym)
+            end
           when "var"
-            Query::DSL::Var.new(name: expr["name"].to_sym)
+            Outcome.ok(Query::DSL::Var.new(name: expr[:name].to_sym))
           when "contains"
-            lhs = T.cast(parse_expression(expr["lhs"]), Query::DSL::ValueExpr)
-            Query::DSL::Contains.new(lhs: lhs, rhs: expr["rhs"])
+            parse_expression(expr[:lhs]).map do |lhs|
+              lhs = T.cast(lhs, Query::DSL::ValueExpr)
+              Query::DSL::Contains.new(lhs: lhs, rhs: expr[:rhs])
+            end
           when "matches_regex"
-            lhs = T.cast(parse_expression(expr["lhs"]), Query::DSL::ValueExpr)
-            Query::DSL::MatchesRegex.new(lhs: lhs, rhs: expr["rhs"])
+            parse_expression(expr[:lhs]).map do |lhs|
+              lhs = T.cast(lhs, Query::DSL::ValueExpr)
+              Query::DSL::MatchesRegex.new(lhs: lhs, rhs: expr[:rhs])
+            end
           else
-            raise "unrecognized op '#{expr['op']}'"
+            Outcome.error("unrecognized op '#{expr[:op]}'")
           end
         elsif expr.is_a?(Hash) || expr.is_a?(Array)
           # it's a primitive value
-          raise "can't parse expression: #{expr}"
+          Outcome.error("can't parse expression: #{expr}")
         else
-          expr
+          Outcome.ok(expr)
         end
       end
     end

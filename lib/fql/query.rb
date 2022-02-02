@@ -11,7 +11,7 @@ module FQL
       @expr = expr
     end
 
-    sig { params(input: String).returns(Outcome[T.attached_class]) }
+    sig { params(input: T::Hash[T.any(String, Symbol), T.untyped]).returns(Outcome[T.attached_class]) }
     def self.from_json(input)
       Serde::JSON.new.deserialize(input).map do |parsed|
         new(parsed)
@@ -28,7 +28,7 @@ module FQL
       Backend::Arel.compile(model, expr)
     end
 
-    sig { returns(String) }
+    sig { returns(T::Hash[Symbol, T.untyped]) }
     def to_json
       Serde::JSON.new.serialize(expr)
     end

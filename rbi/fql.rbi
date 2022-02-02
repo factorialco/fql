@@ -1,6 +1,6 @@
 # typed: strong
 module FQL
-  VERSION = "0.1.5".freeze
+  VERSION = "0.1.6".freeze
 
   class Outcome
     extend T::Sig
@@ -10,8 +10,8 @@ module FQL
     sig { type_parameters(:T).params(value: T.type_parameter(:T)).returns(Outcome[T.type_parameter(:T)]) }
     def self.ok(value); end
 
-    sig { params(message: String, exception: StandardError).returns(Outcome[T.untyped]) }
-    def self.error(message, exception); end
+    sig { params(message: String, exception: T.nilable(StandardError)).returns(Outcome[T.untyped]) }
+    def self.error(message, exception = nil); end
 
     sig { params(obj: T.any(Ok[Elem], Error)).void }
     def initialize(obj); end
@@ -28,8 +28,14 @@ module FQL
     sig { returns(T.nilable(Elem)) }
     def value; end
 
+    sig { returns(Elem) }
+    def unwrap!; end
+
     sig { type_parameters(:U).params(_block: T.proc.params(arg0: Elem).returns(T.type_parameter(:U))).returns(Outcome[T.type_parameter(:U)]) }
     def map(&_block); end
+
+    sig { type_parameters(:U).params(_block: T.proc.params(arg0: Elem).returns(Outcome[T.untyped])).returns(Outcome[T.untyped]) }
+    def bind(&_block); end
 
     class Ok < T::Struct
       prop :value, Elem, immutable: true
@@ -41,7 +47,7 @@ module FQL
 
     class Error < T::Struct
       prop :message, String, immutable: true
-      prop :exception, StandardError, immutable: true
+      prop :exception, T.nilable(StandardError), immutable: true
 
       extend T::Sig
     end
@@ -52,10 +58,10 @@ module FQL
       extend T::Sig
       extend T::Generic
 
-      sig { params(input: String).returns(Outcome[Query::DSL::BoolExpr]) }
+      sig { params(input: T::Hash[T.any(String, Symbol), T.untyped]).returns(Outcome[Query::DSL::BoolExpr]) }
       def deserialize(input); end
 
-      sig { params(expr: Query::DSL::BoolExpr).returns(String) }
+      sig { params(expr: Query::DSL::BoolExpr).returns(T::Hash[Symbol, T.untyped]) }
       def serialize(expr); end
 
       sig { params(expr: T.nilable(T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr))).returns(T.any(
@@ -68,8 +74,9 @@ module FQL
           )) }
       def serialize_expression(expr); end
 
-      sig { params(expr: T.any(T::Hash[String, T.untyped], T::Boolean, Integer, String,
-                           Date, NilClass)).returns(T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr, NilClass)) }
+      sig { params(expr: T.any(T::Hash[Symbol, T.untyped], T::Boolean, Integer, String,
+                           Date, NilClass)).returns(Outcome[T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr,
+                                                                  NilClass)]) }
       def parse_expression(expr); end
     end
   end
@@ -178,7 +185,7 @@ module FQL
     sig { params(expr: DSL::BoolExpr).void }
     def initialize(expr); end
 
-    sig { params(input: String).returns(Outcome[T.attached_class]) }
+    sig { params(input: T::Hash[T.any(String, Symbol), T.untyped]).returns(Outcome[T.attached_class]) }
     def self.from_json(input); end
 
     sig { returns(Backend::Ruby::CompiledFunction) }
@@ -187,7 +194,7 @@ module FQL
     sig { params(model: T.class_of(ActiveRecord::Base)).returns(ActiveRecord::Relation) }
     def to_arel(model); end
 
-    sig { returns(String) }
+    sig { returns(T::Hash[Symbol, T.untyped]) }
     def to_json; end
 
     sig { params(suffix: T.nilable(String)).returns(String) }
