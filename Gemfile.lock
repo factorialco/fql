@@ -1,12 +1,12 @@
 PATH
   remote: .
   specs:
-    fql (0.1.4)
+    fql (0.1.5)
       activerecord (~> 6.0)
       i18n (~> 1.8)
       sorbet-rails (~> 0.7.3)
       sorbet-runtime (~> 0.5)
-      zeitwerk (~> 2.5.3)
+      zeitwerk (~> 2.4)
 
 GEM
   remote: https://rubygems.org/
