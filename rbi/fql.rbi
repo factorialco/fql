@@ -1,6 +1,6 @@
 # typed: strong
 module FQL
-  VERSION = "0.1.8".freeze
+  VERSION = "0.1.9".freeze
 
   class Outcome
     extend T::Sig
