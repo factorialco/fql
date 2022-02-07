@@ -24,6 +24,7 @@ module FQL
         ).returns(
           T.any(
             T::Hash[Symbol, T.untyped],
+            T::Array[T.untyped],
             T::Boolean,
             String,
             Integer,
@@ -38,6 +39,8 @@ module FQL
           expr
         when Date
           expr.to_s
+        when Array
+          expr.map { |e| serialize_expression(e) }
         when Query::DSL::And
           { op: "and", lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs) }
         when Query::DSL::Or
@@ -53,6 +56,8 @@ module FQL
                      when Query::DSL::Lte then "lte"
                      end
           { op: operator, lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs) }
+        when Query::DSL::OneOf
+          { op: "one_of", member: serialize_expression(expr.member), set: serialize_expression(expr.set) }
         when Query::DSL::Contains
           { op: "contains", lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs) }
         when Query::DSL::Rel
@@ -133,6 +138,11 @@ module FQL
             end
           when "var"
             Outcome.ok(Query::DSL::Var.new(name: expr[:name].to_sym))
+          when "one_of"
+            parse_expression(expr[:member]).map do |member|
+              member = T.cast(member, Query::DSL::ValueExpr)
+              Query::DSL::OneOf.new(member: member, set: expr[:set])
+            end
           when "contains"
             parse_expression(expr[:lhs]).map do |lhs|
               lhs = T.cast(lhs, Query::DSL::ValueExpr)

@@ -60,6 +60,10 @@ RSpec.describe FQL::Serde::JSON do
     expect(F.lte(F.attr(F.rel(:self), :name), F.var(:number))).to roundtrip
   end
 
+  it "roundtrips OneOf" do
+    expect(F.one_of(F.attr(F.rel(:self), :name), %w[hello goodbye])).to roundtrip
+  end
+
   it "roundtrips Contains" do
     expect(F.contains(F.attr(F.rel(:self), :name), "hello")).to roundtrip
   end

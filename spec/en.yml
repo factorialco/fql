@@ -20,6 +20,9 @@ en:
     not_less_than: "%{left} is NOT less than %{right}"
     not_less_than_or_equals: "%{left} is not less than (or equals) %{right}"
 
+    one_of: "%{left} is one of %{right}"
+    not_one_of: "%{left} is not one of %{right}"
+
     contains: "%{left} contains %{right}"
     does_not_contain: "%{left} does not contain %{right}"
 
