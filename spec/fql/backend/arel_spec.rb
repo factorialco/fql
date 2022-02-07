@@ -92,6 +92,12 @@ RSpec.describe FQL::Backend::Arel do
       end
     end
 
+    describe "OneOf" do
+      it "compiles to in" do
+        expect(F.one_of(F.attr(F.rel(:self), :first_name), %w[this that])).to compile_to('SELECT DISTINCT "users".* FROM "users" WHERE "users"."first_name" IN (\'this\', \'that\')')
+      end
+    end
+
     describe "Contains" do
       it "compiles to like" do
         expect(F.contains(F.attr(F.rel(:self), :first_name), "thing")).to compile_to('SELECT DISTINCT "users".* FROM "users" WHERE "users"."first_name" LIKE \'%thing%\'')

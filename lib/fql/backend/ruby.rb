@@ -18,7 +18,10 @@ module FQL
         RubyVM::InstructionSequence.compile(code).eval
       end
 
-      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr, NilClass)).returns(String) }
+      sig do
+        params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr, NilClass,
+                           T::Array[Query::DSL::Primitive])).returns(String)
+      end
       def self.compile_expression(expr)
         case expr
         when true, false, Integer
@@ -27,6 +30,8 @@ module FQL
           "nil"
         when String
           "\"#{expr}\""
+        when Array
+          "[#{expr.map { |e| compile_expression(e) }.join(', ')}]"
         when Date
           "Date.parse(\"#{expr}\")"
         when Query::DSL::And
@@ -53,6 +58,8 @@ module FQL
           "(#{lhs} #{operator} #{rhs})"
         when Query::DSL::Eq
           "(#{compile_expression(expr.lhs)} == #{compile_expression(expr.rhs)})"
+        when Query::DSL::OneOf
+          "#{compile_expression(expr.set)}.include?(#{compile_expression(expr.member)})"
         when Query::DSL::Contains
           "#{compile_expression(expr.lhs)}.include?(#{compile_expression(expr.rhs)})"
         when Query::DSL::MatchesRegex

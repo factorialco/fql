@@ -37,9 +37,9 @@ module FQL
         const :name, Symbol
       end
 
-      BoolExpr = T.type_alias { T.any(Or, And, Eq, Gt, Gte, Lt, Lte, Not, Contains, MatchesRegex, T::Boolean) }
+      BoolExpr = T.type_alias { T.any(Or, And, Eq, Gt, Gte, Lt, Lte, Not, OneOf, Contains, MatchesRegex, T::Boolean) }
       Primitive = T.type_alias { T.any(String, Integer, Date, T::Boolean) }
-      ValueExpr = T.type_alias { T.any(Attr, Rel, Var, Primitive) }
+      ValueExpr = T.type_alias { T.any(Attr, Rel, Var, Primitive, T::Array[Primitive]) }
 
       # Determine equality between two values.
       class Eq < T::Struct
@@ -65,6 +65,11 @@ module FQL
       class Lte < T::Struct
         const :lhs, ValueExpr
         const :rhs, ValueExpr
+      end
+
+      class OneOf < T::Struct
+        const :member, ValueExpr
+        const :set, T::Array[Primitive]
       end
 
       class Contains < T::Struct
@@ -137,6 +142,11 @@ module FQL
         sig { params(lhs: ValueExpr, rhs: ValueExpr).returns(Lte) }
         def lte(lhs, rhs)
           Lte.new(lhs: lhs, rhs: rhs)
+        end
+
+        sig { params(member: ValueExpr, set: T::Array[Primitive]).returns(OneOf) }
+        def one_of(member, set)
+          OneOf.new(member: member, set: set)
         end
 
         sig { params(lhs: ValueExpr, rhs: String).returns(Contains) }

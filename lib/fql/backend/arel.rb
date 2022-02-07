@@ -8,7 +8,7 @@ module FQL
       extend T::Generic
 
       A = ::Arel::Nodes
-      PlainValue = T.type_alias { T.any(String, Integer, Date, NilClass) }
+      PlainValue = T.type_alias { T.any(String, Integer, Date, NilClass, T::Array[Query::DSL::Primitive]) }
       Attribute = T.type_alias { T.any(::Arel::Attribute, A::True, A::False) }
       Table = T.type_alias { T.any(::Arel::Table, A::TableAlias) }
 
@@ -40,8 +40,10 @@ module FQL
       end
 
       sig do
-        params(expr: T.any(Query::DSL::BoolExpr,
-                           Query::DSL::ValueExpr, NilClass)).returns(T.any(A::Node, PlainValue, Table, Attribute))
+        params(
+          expr: T.any(Query::DSL::BoolExpr,
+                      Query::DSL::ValueExpr, NilClass, T::Array[Query::DSL::Primitive])
+        ).returns(T.any(A::Node, PlainValue, Table, Attribute))
       end
       def compile_expression(expr)
         case expr
@@ -51,6 +53,8 @@ module FQL
           nil
         when Integer, String, Date
           expr
+        when Array
+          expr.map { |e| compile_expression(e) }
         when Query::DSL::And
           T.cast(compile_expression(expr.lhs), A::Node).and(T.cast(compile_expression(expr.rhs), A::Node))
         when Query::DSL::Or
@@ -67,6 +71,8 @@ module FQL
           T.cast(compile_expression(expr.lhs), Attribute).lt(compile_expression(expr.rhs))
         when Query::DSL::Lte
           T.cast(compile_expression(expr.lhs), Attribute).lteq(compile_expression(expr.rhs))
+        when Query::DSL::OneOf
+          T.cast(compile_expression(expr.member), Attribute).in(compile_expression(expr.set))
         when Query::DSL::Contains
           T.cast(compile_expression(expr.lhs), Attribute).matches("%#{compile_expression(expr.rhs)}%")
         when Query::DSL::MatchesRegex

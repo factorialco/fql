@@ -25,6 +25,8 @@ module FQL
           "null"
         when String
           "\"#{expr}\""
+        when Array
+          "[#{expr.map { |e| compile_expression(e, suffix: suffix) }.join(', ')}]"
         when Date
           expr.strftime("%B %d, %Y")
         when Query::DSL::And
@@ -75,6 +77,13 @@ module FQL
             operator,
             left: compile_expression(expr.lhs, suffix: suffix),
             right: compile_expression(expr.rhs, suffix: suffix)
+          )
+        when Query::DSL::OneOf
+          t(
+            suffix,
+            negated ? "not_one_of" : "one_of",
+            left: compile_expression(expr.member, suffix: suffix),
+            right: compile_expression(expr.set, suffix: suffix)
           )
         when Query::DSL::Contains
           t(

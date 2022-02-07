@@ -56,6 +56,10 @@ module FQL
         validate_expression!(expr.lhs)
         validate_expression!(expr.rhs)
         nil
+      when Query::DSL::OneOf
+        validate_expression!(expr.member)
+        validate_expression!(expr.set)
+        nil
       when Query::DSL::Rel
         if expr.name == [:self]
           model

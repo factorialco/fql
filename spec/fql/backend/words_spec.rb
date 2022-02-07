@@ -131,6 +131,12 @@ RSpec.describe FQL::Backend::Words do
       end
     end
 
+    describe "OneOf" do
+      it "compiles to is one of" do
+        expect(F.one_of("Hello", %w[Hello Goodbye])).to compile_to('"Hello" is one of ["Hello", "Goodbye"]')
+      end
+    end
+
     describe "Contains" do
       it "compiles to contains" do
         expect(F.contains("Something", "thing")).to compile_to('"Something" contains "thing"')

@@ -115,6 +115,12 @@ RSpec.describe FQL::Backend::Ruby do
       end
     end
 
+    describe "OneOf" do
+      it "compiles to include?, but reversed" do
+        expect(F.one_of(2, [1, 2, 3])).to compile_to("[1, 2, 3].include?(2)")
+      end
+    end
+
     describe "Contains" do
       it "compiles to include?" do
         expect(F.contains("Something", "thing")).to compile_to('"Something".include?("thing")')

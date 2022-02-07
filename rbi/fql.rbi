@@ -1,6 +1,6 @@
 # typed: strong
 module FQL
-  VERSION = "0.1.9".freeze
+  VERSION = "0.1.10".freeze
 
   class Outcome
     extend T::Sig
@@ -66,6 +66,7 @@ module FQL
 
       sig { params(expr: T.nilable(T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr))).returns(T.any(
             T::Hash[Symbol, T.untyped],
+            T::Array[T.untyped],
             T::Boolean,
             String,
             Integer,
@@ -120,7 +121,7 @@ module FQL
     class Arel
       extend T::Sig
       extend T::Generic
-      PlainValue = T.type_alias { T.any(String, Integer, Date, NilClass) }
+      PlainValue = T.type_alias { T.any(String, Integer, Date, NilClass, T::Array[Query::DSL::Primitive]) }
       Attribute = T.type_alias { T.any(::Arel::Attribute, A::True, A::False) }
       Table = T.type_alias { T.any(::Arel::Table, A::TableAlias) }
       A = ::Arel::Nodes
@@ -135,7 +136,7 @@ module FQL
       def compile(expr); end
 
       sig { params(expr: T.any(Query::DSL::BoolExpr,
-                           Query::DSL::ValueExpr, NilClass)).returns(T.any(A::Node, PlainValue, Table, Attribute)) }
+                      Query::DSL::ValueExpr, NilClass, T::Array[Query::DSL::Primitive])).returns(T.any(A::Node, PlainValue, Table, Attribute)) }
       def compile_expression(expr); end
 
       sig { returns(T.class_of(ActiveRecord::Base)) }
@@ -161,7 +162,8 @@ module FQL
       sig { params(expr: Query::DSL::BoolExpr).returns(CompiledFunction) }
       def self.compile(expr); end
 
-      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr, NilClass)).returns(String) }
+      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr, NilClass,
+                           T::Array[Query::DSL::Primitive])).returns(String) }
       def self.compile_expression(expr); end
     end
 
@@ -209,9 +211,9 @@ module FQL
     module DSL
       extend T::Sig
       extend Methods
-      BoolExpr = T.type_alias { T.any(Or, And, Eq, Gt, Gte, Lt, Lte, Not, Contains, MatchesRegex, T::Boolean) }
+      BoolExpr = T.type_alias { T.any(Or, And, Eq, Gt, Gte, Lt, Lte, Not, OneOf, Contains, MatchesRegex, T::Boolean) }
       Primitive = T.type_alias { T.any(String, Integer, Date, T::Boolean) }
-      ValueExpr = T.type_alias { T.any(Attr, Rel, Var, Primitive) }
+      ValueExpr = T.type_alias { T.any(Attr, Rel, Var, Primitive, T::Array[Primitive]) }
 
       class And < T::Struct
         prop :lhs, T.untyped, immutable: true
@@ -276,6 +278,12 @@ module FQL
 
       end
 
+      class OneOf < T::Struct
+        prop :member, ValueExpr, immutable: true
+        prop :set, T::Array[Primitive], immutable: true
+
+      end
+
       class Contains < T::Struct
         prop :lhs, ValueExpr, immutable: true
         prop :rhs, String, immutable: true
@@ -323,6 +331,9 @@ module FQL
 
         sig { params(lhs: ValueExpr, rhs: ValueExpr).returns(Lte) }
         def lte(lhs, rhs); end
+
+        sig { params(member: ValueExpr, set: T::Array[Primitive]).returns(OneOf) }
+        def one_of(member, set); end
 
         sig { params(lhs: ValueExpr, rhs: String).returns(Contains) }
         def contains(lhs, rhs); end
