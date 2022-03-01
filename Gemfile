@@ -12,7 +12,7 @@ gem "rubocop", "1.24.1"
 gem "rubocop-packaging", "0.5.1"
 gem "rubocop-performance", "1.13.1"
 gem "rubocop-rake", "0.6.0"
-gem "rubocop-rspec", "2.7.0"
+gem "rubocop-rspec", "2.9.0"
 gem "rubocop-sorbet"
 gem "simplecov", require: false
 gem "simplecov-buildkite"
