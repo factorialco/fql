@@ -19,7 +19,7 @@ Gem::Specification.new do |spec|
     "rubygems_mfa_required" => "true"
   }
 
-  spec.add_runtime_dependency "activerecord", "~> 6.0"
+  spec.add_runtime_dependency "activerecord", ">= 6", "< 8"
   spec.add_runtime_dependency "i18n", "~> 1.8"
   spec.add_runtime_dependency "sorbet-rails", "~> 0.7.3"
   spec.add_runtime_dependency "sorbet-runtime", "~> 0.5"
