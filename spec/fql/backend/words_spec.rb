@@ -6,13 +6,15 @@ RSpec.describe FQL::Backend::Words do
 
   matcher :compile_to do |expected|
     match do |expression|
-      described_class.compile_expression(expression) == expected
+      described_class.compile_expression(expression, library: library) == expected
     end
     failure_message do |expression|
-      result = described_class.compile_expression(expression)
+      result = described_class.compile_expression(expression, library: library)
       "expected #{expression.inspect} to compile to '#{expected}', but got '#{result}' instead"
     end
   end
+
+  let(:library) { TestUserLibrary.new }
 
   let(:complex_query) do
     F.or(
@@ -181,6 +183,12 @@ RSpec.describe FQL::Backend::Words do
     describe "Var" do
       it "compiles to a var lookup" do
         expect(F.var(:username)).to compile_to("a given username")
+      end
+    end
+
+    describe "Call" do
+      it "expands the macro" do
+        expect(F.call(:echo, F.var(:username))).to compile_to("a given username")
       end
     end
   end

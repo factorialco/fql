@@ -5,18 +5,18 @@ module FQL
   module Backend
     class Arel
       extend T::Sig
-      extend T::Generic
 
       A = ::Arel::Nodes
       PlainValue = T.type_alias { T.any(String, Integer, Date, NilClass, T::Array[Query::DSL::Primitive]) }
       Attribute = T.type_alias { T.any(::Arel::Attribute, A::True, A::False) }
       Table = T.type_alias { T.any(::Arel::Table, A::TableAlias) }
 
-      sig { params(model: T.class_of(ActiveRecord::Base), vars: T::Hash[Symbol, T.untyped]).void }
-      def initialize(model, vars={})
+      sig { params(model: T.class_of(ActiveRecord::Base), vars: T::Hash[Symbol, T.untyped], library: Library).void }
+      def initialize(model, vars: {}, library: Library.empty)
         @model = model
         @arel_table = T.let(model.arel_table, ::Arel::Table)
         @vars = vars
+        @library = library
         @joins = T.let([], T::Array[A::Join])
       end
 
@@ -24,14 +24,15 @@ module FQL
         params(
           model: T.class_of(ActiveRecord::Base),
           expr: Query::DSL::BoolExpr,
-          vars: T::Hash[Symbol, T.untyped]
+          vars: T::Hash[Symbol, T.untyped],
+          library: Library
         ).returns(ActiveRecord::Relation)
       end
-      def self.compile(model, expr, vars={})
-        new(model, vars).compile(expr)
+      def self.compile(model, expr, vars: {}, library: Library.empty)
+        new(model, vars: vars, library: library).compile(expr)
       end
 
-      sig { params(expr: Query::DSL::BoolExpr).returns(ActiveRecord::Relation) }
+      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::Call)).returns(ActiveRecord::Relation) }
       def compile(expr)
         where_clause = compile_expression(expr)
         joins.reduce(model) do |acc, join|
@@ -108,6 +109,11 @@ module FQL
           end
         when Query::DSL::Var
           vars.fetch(expr.name)
+        when Query::DSL::Call
+          found = library.call(expr.name, expr.arguments)
+          raise ArgumentError, "The library function #{expr.name} errored" unless found
+
+          compile_expression(found)
         when Query::DSL::Attr
           T.cast(compile_expression(expr.target), Table)[expr.name]
         else
@@ -128,6 +134,9 @@ module FQL
 
       sig { returns(T::Hash[Symbol, T.untyped]) }
       attr_reader :vars
+
+      sig { returns(Library) }
+      attr_reader :library
     end
   end
 end

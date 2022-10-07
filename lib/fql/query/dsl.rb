@@ -50,9 +50,19 @@ module FQL
         const :name, Symbol
       end
 
+      # Resolve a variable at runtime that will be passed to the interpreter.
+      class Call < T::Struct
+        include T::Struct::ActsAsComparable
+
+        const :name, Symbol
+        const :arguments, T::Array[T.untyped]
+      end
+
       BoolExpr = T.type_alias { T.any(Or, And, Eq, Gt, Gte, Lt, Lte, Not, OneOf, Contains, MatchesRegex, T::Boolean) }
       Primitive = T.type_alias { T.any(String, Integer, Date, T::Boolean) }
-      ValueExpr = T.type_alias { T.any(Attr, Rel, Var, Primitive, T::Array[Primitive]) }
+      ValueExpr = T.type_alias { T.any(Attr, Rel, Var, Call, Primitive, T::Array[Primitive]) }
+
+      Expr = T.type_alias { T.any(BoolExpr, ValueExpr) }
 
       # Determine equality between two values.
       class Eq < T::Struct
@@ -146,6 +156,11 @@ module FQL
         sig { params(name: Symbol).returns(Var) }
         def var(name)
           Var.new(name: name)
+        end
+
+        sig { params(name: Symbol, args: T.any(ValueExpr, NilClass)).returns(Call) }
+        def call(name, *args)
+          Call.new(name: name, arguments: args)
         end
 
         sig { params(lhs: ValueExpr, rhs: T.any(ValueExpr, NilClass)).returns(Eq) }

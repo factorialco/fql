@@ -13,6 +13,8 @@ AllCops:
   Exclude:
     - "tmp/**/*"
     - "vendor/**/*"
+    - "bin/**/*"
+    - "sorbet/**/*"
 
 Layout/HashAlignment:
   EnforcedColonStyle:
@@ -103,6 +105,8 @@ Sorbet/StrictSigil:
   Exclude:
     - 'spec/**/*'
     - 'lib/fql/version.rb'
+    - 'lib/fql/library.rb'
+    - 'lib/fql/validation.rb'
 
 Sorbet/ForbidUntypedStructProps:
   Enabled: True
@@ -121,9 +125,7 @@ Lint/ConstantDefinitionInBlock:
     - 'spec/**/*'
 
 Layout/LineLength:
-  Enabled: true
-  Exclude:
-    - 'spec/**/*'
+  Enabled: false
 
 RSpec/ExpectActual:
   Enabled: true
@@ -143,6 +145,7 @@ Sorbet/EnforceSignatures:
   Enabled: true
   Exclude:
     - 'Rakefile'
+    - 'lib/fql/validation.rb'
 
 Style/AccessorGrouping:
   Enabled: false

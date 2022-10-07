@@ -66,6 +66,8 @@ module FQL
           { op: "attr", target: serialize_expression(expr.target), name: expr.name.to_s }
         when Query::DSL::Var
           { op: "var", name: expr.name.to_s }
+        when Query::DSL::Call
+          { op: "call", name: expr.name.to_s, arguments: expr.arguments.map { |arg| serialize_expression(arg) } }
         when Query::DSL::MatchesRegex
           { op: "matches_regex", lhs: serialize_expression(expr.lhs), rhs: expr.rhs.to_s }
         else
@@ -138,6 +140,17 @@ module FQL
             end
           when "var"
             Outcome.ok(Query::DSL::Var.new(name: expr[:name].to_sym))
+          when "call"
+            args = expr[:arguments].map { |arg| parse_expression(arg) }
+            errors = args.select(&:error?).map do |errored|
+              errored.error.message
+            end
+            if errors.any?
+              Outcome.error(errors.join(", "))
+            else
+              parsed = args.map(&:value)
+              Outcome.ok(Query::DSL::Call.new(name: expr[:name].to_sym, arguments: parsed))
+            end
           when "one_of"
             parse_expression(expr[:member]).map do |member|
               member = T.cast(member, Query::DSL::ValueExpr)

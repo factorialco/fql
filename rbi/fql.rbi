@@ -1,6 +1,25 @@
 # typed: strong
 module FQL
-  VERSION = "0.1.10".freeze
+  VERSION = "0.2.0".freeze
+
+  class Library
+    extend T::Sig
+
+    sig { params(name: Symbol, body: T.proc.params(args: T::Array[Query::DSL::Expr]).returns(Query::DSL::Expr)).void }
+    def self.function(name, &body); end
+
+    sig { returns(T::Hash[Symbol, T.proc.params(args: T::Array[Query::DSL::Expr]).returns(Query::DSL::Expr)]) }
+    def self.functions; end
+
+    sig { returns(Library) }
+    def self.empty; end
+
+    sig { params(name: Symbol, args: T::Array[Query::DSL::Expr]).returns(Query::DSL::Expr) }
+    def call(name, args); end
+
+    sig { returns(String) }
+    def inspect; end
+  end
 
   class Outcome
     extend T::Sig
@@ -84,6 +103,7 @@ module FQL
 
   class Validation
     extend T::Sig
+    extend T::Generic
 
     class Result < T::Struct
       prop :errors, T::Array[String], immutable: true
@@ -94,11 +114,11 @@ module FQL
       def valid?; end
     end
 
-    sig { params(model: T.class_of(ActiveRecord::Base), expr: Query::DSL::BoolExpr).returns(Result) }
-    def self.validate(model, expr); end
+    sig { params(model: T.untyped, expr: T.untyped, library: T.untyped).returns(T.untyped) }
+    def self.validate(model, expr, library: Library.empty); end
 
-    sig { params(model: T.class_of(ActiveRecord::Base), expr: Query::DSL::BoolExpr).void }
-    def initialize(model, expr); end
+    sig { params(model: T.class_of(ActiveRecord::Base), expr: Query::DSL::BoolExpr, library: Library).void }
+    def initialize(model, expr, library: Library.empty); end
 
     sig { returns(Result) }
     def validate; end
@@ -115,24 +135,33 @@ module FQL
 
     sig { returns(T::Array[String]) }
     attr_reader :errors
+
+    sig { returns(Library) }
+    attr_reader :library
   end
 
   module Backend
     class Arel
       extend T::Sig
-      extend T::Generic
       PlainValue = T.type_alias { T.any(String, Integer, Date, NilClass, T::Array[Query::DSL::Primitive]) }
       Attribute = T.type_alias { T.any(::Arel::Attribute, A::True, A::False) }
       Table = T.type_alias { T.any(::Arel::Table, A::TableAlias) }
       A = ::Arel::Nodes
 
-      sig { params(model: T.class_of(ActiveRecord::Base), vars: T::Hash[Symbol, T.untyped]).void }
-      def initialize(model, vars = {}); end
+      sig { params(model: T.class_of(ActiveRecord::Base), vars: T::Hash[Symbol, T.untyped], library: Library).void }
+      def initialize(model, vars: {}, library: Library.empty); end
 
-      sig { params(model: T.class_of(ActiveRecord::Base), expr: Query::DSL::BoolExpr, vars: T::Hash[Symbol, T.untyped]).returns(ActiveRecord::Relation) }
-      def self.compile(model, expr, vars = {}); end
+      sig do
+        params(
+          model: T.class_of(ActiveRecord::Base),
+          expr: Query::DSL::BoolExpr,
+          vars: T::Hash[Symbol, T.untyped],
+          library: Library
+        ).returns(ActiveRecord::Relation)
+      end
+      def self.compile(model, expr, vars: {}, library: Library.empty); end
 
-      sig { params(expr: Query::DSL::BoolExpr).returns(ActiveRecord::Relation) }
+      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::Call)).returns(ActiveRecord::Relation) }
       def compile(expr); end
 
       sig { params(expr: T.any(Query::DSL::BoolExpr,
@@ -150,6 +179,9 @@ module FQL
 
       sig { returns(T::Hash[Symbol, T.untyped]) }
       attr_reader :vars
+
+      sig { returns(Library) }
+      attr_reader :library
     end
 
     module Ruby
@@ -159,22 +191,29 @@ module FQL
           arg1: T::Hash[Symbol, T.untyped] # __fql_vars__
         ).returns(T::Boolean) }
 
-      sig { params(expr: Query::DSL::BoolExpr).returns(CompiledFunction) }
-      def self.compile(expr); end
+      sig { params(expr: Query::DSL::BoolExpr, library: Library).returns(CompiledFunction) }
+      def self.compile(expr, library:); end
 
       sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr, NilClass,
-                           T::Array[Query::DSL::Primitive])).returns(String) }
-      def self.compile_expression(expr); end
+                      T::Array[Query::DSL::Primitive]), lib: Library).returns(String) }
+      def self.compile_expression(expr, lib); end
     end
 
     class Words
       extend T::Sig
 
-      sig { params(expr: Query::DSL::BoolExpr, suffix: T.nilable(String)).returns(String) }
-      def self.compile(expr, suffix: nil); end
+      sig { params(expr: Query::DSL::BoolExpr, suffix: T.nilable(String), library: Library).returns(String) }
+      def self.compile(expr, suffix: nil, library: Library.empty); end
 
-      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr), negated: T::Boolean, suffix: T.nilable(String)).returns(String) }
-      def self.compile_expression(expr, negated: false, suffix: nil); end
+      sig do
+        params(
+          expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr),
+          negated: T::Boolean,
+          suffix: T.nilable(String),
+          library: Library
+        ).returns(String)
+      end
+      def self.compile_expression(expr, negated: false, suffix: nil, library: Library.empty); end
 
       sig { params(suffix: T.nilable(String), key: String, kwargs: String).returns(String) }
       def self.t(suffix, key, **kwargs); end
@@ -184,8 +223,8 @@ module FQL
   class Query
     extend T::Sig
 
-    sig { params(expr: DSL::BoolExpr).void }
-    def initialize(expr); end
+    sig { params(expr: DSL::BoolExpr, library: Library).void }
+    def initialize(expr, library: Library.empty); end
 
     sig { params(input: T::Hash[T.any(String, Symbol), T.untyped]).returns(Outcome[T.attached_class]) }
     def self.from_json(input); end
@@ -193,8 +232,8 @@ module FQL
     sig { returns(Backend::Ruby::CompiledFunction) }
     def to_ruby; end
 
-    sig { params(model: T.class_of(ActiveRecord::Base)).returns(ActiveRecord::Relation) }
-    def to_arel(model); end
+    sig { params(model: T.class_of(ActiveRecord::Base), vars: T::Hash[Symbol, T.untyped]).returns(ActiveRecord::Relation) }
+    def to_arel(model, vars = {}); end
 
     sig { returns(T::Hash[Symbol, T.untyped]) }
     def to_json; end
@@ -205,95 +244,129 @@ module FQL
     sig { params(model: T.class_of(ActiveRecord::Base)).returns(Validation::Result) }
     def validate(model); end
 
+    sig { params(another_expr: DSL::BoolExpr).returns(Query) }
+    def and(another_expr); end
+
+    sig { params(another_expr: DSL::BoolExpr).returns(Query) }
+    def or(another_expr); end
+
+    sig { returns(Query) }
+    def not; end
+
     sig { returns(DSL::BoolExpr) }
     attr_reader :expr
+
+    sig { returns(Library) }
+    attr_reader :library
 
     module DSL
       extend T::Sig
       extend Methods
       BoolExpr = T.type_alias { T.any(Or, And, Eq, Gt, Gte, Lt, Lte, Not, OneOf, Contains, MatchesRegex, T::Boolean) }
       Primitive = T.type_alias { T.any(String, Integer, Date, T::Boolean) }
-      ValueExpr = T.type_alias { T.any(Attr, Rel, Var, Primitive, T::Array[Primitive]) }
+      ValueExpr = T.type_alias { T.any(Attr, Rel, Var, Call, Primitive, T::Array[Primitive]) }
+      Expr = T.type_alias { T.any(BoolExpr, ValueExpr) }
 
       class And < T::Struct
         prop :lhs, T.untyped, immutable: true
         prop :rhs, T.untyped, immutable: true
 
+        include T::Struct::ActsAsComparable
       end
 
       class Or < T::Struct
         prop :lhs, T.untyped, immutable: true
         prop :rhs, T.untyped, immutable: true
 
+        include T::Struct::ActsAsComparable
       end
 
       class Not < T::Struct
         prop :expr, T.untyped, immutable: true
 
+        include T::Struct::ActsAsComparable
       end
 
       class Rel < T::Struct
         prop :name, T::Array[Symbol], immutable: true
 
+        include T::Struct::ActsAsComparable
       end
 
       class Attr < T::Struct
         prop :target, Rel, immutable: true
         prop :name, Symbol, immutable: true
 
+        include T::Struct::ActsAsComparable
       end
 
       class Var < T::Struct
         prop :name, Symbol, immutable: true
 
+        include T::Struct::ActsAsComparable
+      end
+
+      class Call < T::Struct
+        prop :name, Symbol, immutable: true
+        prop :arguments, T::Array[T.untyped], immutable: true
+
+        include T::Struct::ActsAsComparable
       end
 
       class Eq < T::Struct
         prop :lhs, ValueExpr, immutable: true
         prop :rhs, T.any(ValueExpr, NilClass), immutable: true
 
+        include T::Struct::ActsAsComparable
       end
 
       class Gt < T::Struct
         prop :lhs, ValueExpr, immutable: true
         prop :rhs, ValueExpr, immutable: true
 
+        include T::Struct::ActsAsComparable
       end
 
       class Lt < T::Struct
         prop :lhs, ValueExpr, immutable: true
         prop :rhs, ValueExpr, immutable: true
 
+        include T::Struct::ActsAsComparable
       end
 
       class Gte < T::Struct
         prop :lhs, ValueExpr, immutable: true
         prop :rhs, ValueExpr, immutable: true
 
+        include T::Struct::ActsAsComparable
       end
 
       class Lte < T::Struct
         prop :lhs, ValueExpr, immutable: true
         prop :rhs, ValueExpr, immutable: true
 
+        include T::Struct::ActsAsComparable
       end
 
       class OneOf < T::Struct
         prop :member, ValueExpr, immutable: true
         prop :set, T::Array[Primitive], immutable: true
 
+        include T::Struct::ActsAsComparable
       end
 
       class Contains < T::Struct
         prop :lhs, ValueExpr, immutable: true
         prop :rhs, String, immutable: true
 
+        include T::Struct::ActsAsComparable
       end
 
       class MatchesRegex < T::Struct
         prop :lhs, ValueExpr, immutable: true
         prop :rhs, String, immutable: true
 
+        include T::Struct::ActsAsComparable
       end
 
       module Methods
@@ -316,6 +389,9 @@ module FQL
 
         sig { params(name: Symbol).returns(Var) }
         def var(name); end
+
+        sig { params(name: Symbol, args: T.any(ValueExpr, NilClass)).returns(Call) }
+        def call(name, *args); end
 
         sig { params(lhs: ValueExpr, rhs: T.any(ValueExpr, NilClass)).returns(Eq) }
         def eq(lhs, rhs); end

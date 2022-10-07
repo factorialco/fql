@@ -33,9 +33,12 @@ rubocop: ## Run style checking
 	bundle exec rubocop
 
 sorbet: ## Typecheck the project
-	bundle exec srb tc --dir . --ignore fql.rbi
+    bundle exec srb tc
 
-parlour: ## Regenerate the public RBI file for library users
-	bundle exec parlour
+regen: ## Regenerate gem RBIs
+    bin/tapioca gem
+
+parlour: ## Regenerate public RBI file
+    bundle exec parlour
 
 .PHONY: test lint rubocop sorbet

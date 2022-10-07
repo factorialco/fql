@@ -4,7 +4,6 @@ gemspec
 gem "byebug"
 gem "fivemat"
 gem "guard-rspec"
-gem "parlour"
 gem "rake", "~> 13.0"
 gem "rspec", "~> 3.1.0"
 gem "rspec_junit_formatter"
@@ -19,3 +18,7 @@ gem "simplecov-buildkite"
 gem "solargraph"
 gem "sorbet"
 gem "sqlite3"
+
+group :development do
+  gem "tapioca", require: false
+end

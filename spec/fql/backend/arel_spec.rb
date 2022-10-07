@@ -22,7 +22,9 @@ RSpec.describe FQL::Backend::Arel do
     end
   end
 
-  subject { described_class.new(User, {}) }
+  subject { described_class.new(User, vars: {}, library: library) }
+
+  let(:library) { TestUserLibrary.new }
 
   describe ".compile_expression" do
     describe "primitive values" do
@@ -146,7 +148,7 @@ RSpec.describe FQL::Backend::Arel do
     end
 
     describe "Var" do
-      subject { described_class.new(User, { country: "fr" }) }
+      subject { described_class.new(User, vars: { country: "fr" }, library: library) }
 
       it "lookups up a variable at compile time" do
         expect(F.eq(F.attr(F.rel(:address), :country), F.var(:country))).to compile_to('SELECT DISTINCT "users".* FROM "users" INNER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" = \'fr\'')
@@ -158,6 +160,22 @@ RSpec.describe FQL::Backend::Arel do
             subject.compile_expression(F.var(:foo))
           end.to raise_error(/key not found/)
         end
+      end
+    end
+
+    context "with a custom library" do
+      subject { described_class.new(User, vars: {}, library: library) }
+
+      it "can call a simple function from the library" do
+        expect(F.eq(F.call(:country), "fr")).to compile_to('SELECT DISTINCT "users".* FROM "users" INNER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" = \'fr\'')
+      end
+
+      it "can call a parameterized function from the library" do
+        expect(F.eq(F.call(:country), F.call(:echo, "fr"))).to compile_to('SELECT DISTINCT "users".* FROM "users" INNER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" = \'fr\'')
+      end
+
+      it "can call a parameterized boolean function from the library" do
+        expect(F.call(:my_eq, F.attr(F.rel(:self), :first_name), "Juanito")).to compile_to("SELECT DISTINCT \"users\".* FROM \"users\" WHERE \"users\".\"first_name\" = 'Juanito'")
       end
     end
   end

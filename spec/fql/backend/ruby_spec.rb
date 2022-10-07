@@ -6,12 +6,14 @@ RSpec.describe FQL::Backend::Ruby do
 
   matcher :compile_to do |expected|
     match do |expression|
-      described_class.compile_expression(expression) == expected
+      described_class.compile_expression(expression, library) == expected
     end
     failure_message do |expression|
-      "expected #{expression.inspect} to compile to \"#{expected}\", but got \"#{described_class.compile_expression(expression)}\" instead"
+      "expected #{expression.inspect} to compile to \"#{expected}\", but got \"#{described_class.compile_expression(expression, library)}\" instead"
     end
   end
+
+  let(:library) { FQL::Library.empty }
 
   let(:complex_query) do
     F.or(
@@ -34,7 +36,7 @@ RSpec.describe FQL::Backend::Ruby do
 
   describe ".compile" do
     it "compiles a complex query to a Ruby proc" do
-      fn = described_class.compile(complex_query)
+      fn = described_class.compile(complex_query, library: library)
       target = double({
                         location: double({
                                            country: "fr"
@@ -171,6 +173,14 @@ RSpec.describe FQL::Backend::Ruby do
     describe "Var" do
       it "compiles to a var lookup" do
         expect(F.var(:username)).to compile_to("__fql_vars__[:username]")
+      end
+    end
+
+    describe "Call" do
+      let(:library) { TestUserLibrary.new }
+
+      it "expands the macro" do
+        expect(F.call(:echo, F.var(:username))).to compile_to("__fql_vars__[:username]")
       end
     end
   end

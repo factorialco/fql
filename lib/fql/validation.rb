@@ -1,8 +1,9 @@
-# typed: strict
+# typed: true
 
 module FQL
   class Validation
     extend T::Sig
+    extend T::Generic
 
     class Result < T::Struct
       extend T::Sig
@@ -15,15 +16,15 @@ module FQL
       end
     end
 
-    sig { params(model: T.class_of(ActiveRecord::Base), expr: Query::DSL::BoolExpr).returns(Result) }
-    def self.validate(model, expr)
-      new(model, expr).validate
+    def self.validate(model, expr, library: Library.empty)
+      new(model, expr, library: library).validate
     end
 
-    sig { params(model: T.class_of(ActiveRecord::Base), expr: Query::DSL::BoolExpr).void }
-    def initialize(model, expr)
+    sig { params(model: T.class_of(ActiveRecord::Base), expr: Query::DSL::BoolExpr, library: Library).void }
+    def initialize(model, expr, library: Library.empty)
       @model = model
       @expr = expr
+      @library = library
       @errors = T.let([], T::Array[String])
     end
 
@@ -78,10 +79,15 @@ module FQL
         end
       when Query::DSL::Attr
         target = validate_expression!(expr.target)
-        if target&.columns&.none? { |column| column.name == expr.name.to_s }
-          errors.append("#{target} does not contain attribute #{expr.name}")
-        end
+        target&.columns&.none? { |column| column.name == expr.name.to_s } && errors.append("#{target} does not contain attribute #{expr.name}")
         nil
+      when Query::DSL::Call
+        found = library.call(expr.name, expr.arguments)
+        if found
+          validate_expression!(found)
+        else
+          errors.append("The library function #{expr.name} errored")
+        end
       end
     end
 
@@ -93,5 +99,8 @@ module FQL
 
     sig { returns(T::Array[String]) }
     attr_reader :errors
+
+    sig { returns(Library) }
+    attr_reader :library
   end
 end
