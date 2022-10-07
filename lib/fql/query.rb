@@ -23,9 +23,14 @@ module FQL
       Backend::Ruby.compile(expr)
     end
 
-    sig { params(model: T.class_of(ActiveRecord::Base)).returns(ActiveRecord::Relation) }
-    def to_arel(model)
-      Backend::Arel.compile(model, expr)
+    sig do
+      params(
+        model: T.class_of(ActiveRecord::Base),
+        vars: T::Hash[Symbol, T.untyped]
+      ).returns(ActiveRecord::Relation)
+    end
+    def to_arel(model, vars={})
+      Backend::Arel.compile(model, expr, vars)
     end
 
     sig { returns(T::Hash[Symbol, T.untyped]) }
@@ -41,6 +46,21 @@ module FQL
     sig { params(model: T.class_of(ActiveRecord::Base)).returns(Validation::Result) }
     def validate(model)
       Validation.validate(model, expr)
+    end
+
+    sig { params(another_expr: DSL::BoolExpr).returns(T.attached_class) }
+    def and(another_expr)
+      self.class.new(DSL::And.new(lhs: expr, rhs: another_expr))
+    end
+
+    sig { params(another_expr: DSL::BoolExpr).returns(T.attached_class) }
+    def or(another_expr)
+      self.class.new(DSL::Or.new(lhs: expr, rhs: another_expr))
+    end
+
+    sig { returns(T.attached_class) }
+    def not
+      self.class.new(DSL::Not.new(expr: expr))
     end
 
     private

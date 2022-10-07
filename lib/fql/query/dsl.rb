@@ -1,5 +1,6 @@
 # typed: strict
 require "date"
+require "sorbet-struct-comparable"
 
 module FQL
   class Query
@@ -7,33 +8,45 @@ module FQL
       extend T::Sig
 
       class And < T::Struct
+        include T::Struct::ActsAsComparable
+
         const :lhs, T.untyped # BoolExpr, but Sorbet can't do recursive type aliases
         const :rhs, T.untyped # BoolExpr, but Sorbet can't do recursive type aliases
       end
 
       class Or < T::Struct
+        include T::Struct::ActsAsComparable
+
         const :lhs, T.untyped # BoolExpr, but Sorbet can't do recursive type aliases
         const :rhs, T.untyped # BoolExpr, but Sorbet can't do recursive type aliases
       end
 
       class Not < T::Struct
+        include T::Struct::ActsAsComparable
+
         const :expr, T.untyped # BoolExpr, but Sorbet can't do recursive type aliases
       end
 
       # Resolve a relation.
       # The special relation named `:self` resolves to the root entity.
       class Rel < T::Struct
+        include T::Struct::ActsAsComparable
+
         const :name, T::Array[Symbol]
       end
 
       # Resolve an attribute of a relation.
       class Attr < T::Struct
+        include T::Struct::ActsAsComparable
+
         const :target, Rel
         const :name, Symbol
       end
 
       # Resolve a variable at runtime that will be passed to the interpreter.
       class Var < T::Struct
+        include T::Struct::ActsAsComparable
+
         const :name, Symbol
       end
 
@@ -43,41 +56,57 @@ module FQL
 
       # Determine equality between two values.
       class Eq < T::Struct
+        include T::Struct::ActsAsComparable
+
         const :lhs, ValueExpr
         const :rhs, T.any(ValueExpr, NilClass)
       end
 
       class Gt < T::Struct
+        include T::Struct::ActsAsComparable
+
         const :lhs, ValueExpr
         const :rhs, ValueExpr
       end
 
       class Lt < T::Struct
+        include T::Struct::ActsAsComparable
+
         const :lhs, ValueExpr
         const :rhs, ValueExpr
       end
 
       class Gte < T::Struct
+        include T::Struct::ActsAsComparable
+
         const :lhs, ValueExpr
         const :rhs, ValueExpr
       end
 
       class Lte < T::Struct
+        include T::Struct::ActsAsComparable
+
         const :lhs, ValueExpr
         const :rhs, ValueExpr
       end
 
       class OneOf < T::Struct
+        include T::Struct::ActsAsComparable
+
         const :member, ValueExpr
         const :set, T::Array[Primitive]
       end
 
       class Contains < T::Struct
+        include T::Struct::ActsAsComparable
+
         const :lhs, ValueExpr
         const :rhs, String
       end
 
       class MatchesRegex < T::Struct
+        include T::Struct::ActsAsComparable
+
         const :lhs, ValueExpr
         const :rhs, String
       end
