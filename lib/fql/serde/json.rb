@@ -42,11 +42,11 @@ module FQL
         when Array
           expr.map { |e| serialize_expression(e) }
         when Query::DSL::And
-          { op: "and", lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs) }
+          { op: "and", lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs), metadata: expr.metadata }
         when Query::DSL::Or
-          { op: "or", lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs) }
+          { op: "or", lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs), metadata: expr.metadata }
         when Query::DSL::Not
-          { op: "not", expr: serialize_expression(expr.expr) }
+          { op: "not", expr: serialize_expression(expr.expr), metadata: expr.metadata }
         when Query::DSL::Eq, Query::DSL::Gt, Query::DSL::Gte, Query::DSL::Lt, Query::DSL::Lte
           operator = case expr
                      when Query::DSL::Eq then "eq"
@@ -55,21 +55,21 @@ module FQL
                      when Query::DSL::Lt then "lt"
                      when Query::DSL::Lte then "lte"
                      end
-          { op: operator, lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs) }
+          { op: operator, lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs), metadata: expr.metadata }
         when Query::DSL::OneOf
-          { op: "one_of", member: serialize_expression(expr.member), set: serialize_expression(expr.set) }
+          { op: "one_of", member: serialize_expression(expr.member), set: serialize_expression(expr.set), metadata: expr.metadata }
         when Query::DSL::Contains
-          { op: "contains", lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs) }
+          { op: "contains", lhs: serialize_expression(expr.lhs), rhs: serialize_expression(expr.rhs), metadata: expr.metadata }
         when Query::DSL::Rel
-          { op: "rel", name: expr.name.map(&:to_s) }
+          { op: "rel", name: expr.name.map(&:to_s), metadata: expr.metadata }
         when Query::DSL::Attr
-          { op: "attr", target: serialize_expression(expr.target), name: expr.name.to_s }
+          { op: "attr", target: serialize_expression(expr.target), name: expr.name.to_s, metadata: expr.metadata }
         when Query::DSL::Var
-          { op: "var", name: expr.name.to_s }
+          { op: "var", name: expr.name.to_s, metadata: expr.metadata }
         when Query::DSL::Call
-          { op: "call", name: expr.name.to_s, arguments: expr.arguments.map { |arg| serialize_expression(arg) } }
+          { op: "call", name: expr.name.to_s, arguments: expr.arguments.map { |arg| serialize_expression(arg) }, metadata: expr.metadata }
         when Query::DSL::MatchesRegex
-          { op: "matches_regex", lhs: serialize_expression(expr.lhs), rhs: expr.rhs.to_s }
+          { op: "matches_regex", lhs: serialize_expression(expr.lhs), rhs: expr.rhs.to_s, metadata: expr.metadata }
         else
           T.absurd(expr)
         end
@@ -90,7 +90,7 @@ module FQL
               parse_expression(expr[:rhs]).map do |rhs|
                 lhs = T.cast(lhs, Query::DSL::BoolExpr)
                 rhs = T.cast(rhs, Query::DSL::BoolExpr)
-                Query::DSL::And.new(lhs: lhs, rhs: rhs)
+                Query::DSL::And.new(lhs: lhs, rhs: rhs, metadata: expr[:metadata])
               end
             end
           when "eq"
@@ -98,7 +98,7 @@ module FQL
               parse_expression(expr[:rhs]).map do |rhs|
                 lhs = T.cast(lhs, Query::DSL::ValueExpr)
                 rhs = T.cast(rhs, T.nilable(Query::DSL::ValueExpr))
-                Query::DSL::Eq.new(lhs: lhs, rhs: rhs)
+                Query::DSL::Eq.new(lhs: lhs, rhs: rhs, metadata: expr[:metadata])
               end
             end
           when "or"
@@ -106,13 +106,13 @@ module FQL
               parse_expression(expr[:rhs]).map do |rhs|
                 lhs = T.cast(lhs, Query::DSL::BoolExpr)
                 rhs = T.cast(rhs, Query::DSL::BoolExpr)
-                Query::DSL::Or.new(lhs: lhs, rhs: rhs)
+                Query::DSL::Or.new(lhs: lhs, rhs: rhs, metadata: expr[:metadata])
               end
             end
           when "not"
             parse_expression(expr[:expr]).map do |expression|
               expression = T.cast(expression, Query::DSL::BoolExpr)
-              Query::DSL::Not.new(expr: expression)
+              Query::DSL::Not.new(expr: expression, metadata: expr[:metadata])
             end
           when "gt", "gte", "lt", "lte"
             parse_expression(expr[:lhs]).bind do |lhs|
@@ -128,18 +128,18 @@ module FQL
                          Query::DSL::Lt
                        when "lte"
                          Query::DSL::Lte
-                       end).new(lhs: lhs, rhs: rhs)
+                       end).new(lhs: lhs, rhs: rhs, metadata: expr[:metadata])
               end
             end
           when "rel"
-            Outcome.ok(Query::DSL::Rel.new(name: expr[:name].map(&:to_sym)))
+            Outcome.ok(Query::DSL::Rel.new(name: expr[:name].map(&:to_sym), metadata: expr[:metadata]))
           when "attr"
             parse_expression(expr[:target]).map do |target|
               target = T.cast(target, Query::DSL::Rel)
-              Query::DSL::Attr.new(target: target, name: expr[:name].to_sym)
+              Query::DSL::Attr.new(target: target, name: expr[:name].to_sym, metadata: expr[:metadata])
             end
           when "var"
-            Outcome.ok(Query::DSL::Var.new(name: expr[:name].to_sym))
+            Outcome.ok(Query::DSL::Var.new(name: expr[:name].to_sym, metadata: expr[:metadata]))
           when "call"
             args = expr[:arguments].map { |arg| parse_expression(arg) }
             errors = args.select(&:error?).map do |errored|
@@ -149,22 +149,22 @@ module FQL
               Outcome.error(errors.join(", "))
             else
               parsed = args.map(&:value)
-              Outcome.ok(Query::DSL::Call.new(name: expr[:name].to_sym, arguments: parsed))
+              Outcome.ok(Query::DSL::Call.new(name: expr[:name].to_sym, arguments: parsed, metadata: expr[:metadata]))
             end
           when "one_of"
             parse_expression(expr[:member]).map do |member|
               member = T.cast(member, Query::DSL::ValueExpr)
-              Query::DSL::OneOf.new(member: member, set: expr[:set])
+              Query::DSL::OneOf.new(member: member, set: expr[:set], metadata: expr[:metadata])
             end
           when "contains"
             parse_expression(expr[:lhs]).map do |lhs|
               lhs = T.cast(lhs, Query::DSL::ValueExpr)
-              Query::DSL::Contains.new(lhs: lhs, rhs: expr[:rhs])
+              Query::DSL::Contains.new(lhs: lhs, rhs: expr[:rhs], metadata: expr[:metadata])
             end
           when "matches_regex"
             parse_expression(expr[:lhs]).map do |lhs|
               lhs = T.cast(lhs, Query::DSL::ValueExpr)
-              Query::DSL::MatchesRegex.new(lhs: lhs, rhs: expr[:rhs])
+              Query::DSL::MatchesRegex.new(lhs: lhs, rhs: expr[:rhs], metadata: expr[:metadata])
             end
           else
             Outcome.error("unrecognized op '#{expr[:op]}'")

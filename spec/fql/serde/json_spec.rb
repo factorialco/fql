@@ -8,7 +8,7 @@ RSpec.describe FQL::Serde::JSON do
 
   matcher :roundtrip do
     match do |expression|
-      serialized = subject.serialize(expression)
+      serialized = subject.serialize(F.with_meta({foo: :bar}, expression))
       subject.serialize(
         subject.deserialize(
           serialized

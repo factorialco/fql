@@ -54,3 +54,16 @@ class TestUserLibrary < FQL::Library
     F.eq(a, b)
   end
 end
+class TestUserLibrary < FQL::Library
+  function(:country) do
+    F.attr(F.rel(:address), :country)
+  end
+
+  function(:echo) do |what|
+    what
+  end
+
+  function(:my_eq) do |a, b|
+    F.eq(a, b)
+  end
+end

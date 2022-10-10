@@ -64,10 +64,10 @@ module FQL
       self.class.new(DSL::Not.new(expr: expr))
     end
 
-    private
-
     sig { returns(DSL::BoolExpr) }
     attr_reader :expr
+
+    private
 
     sig { returns(Library) }
     attr_reader :library
