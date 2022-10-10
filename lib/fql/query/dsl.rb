@@ -148,17 +148,17 @@ module FQL
           node.tap { |n| n.metadata.merge!(metadata) }
         end
 
-        sig { params(lhs: BoolExpr, rhs: BoolExpr).returns(And) }
+        sig { params(lhs: Root, rhs: Root).returns(And) }
         def and(lhs, rhs)
           And.new(lhs: lhs, rhs: rhs)
         end
 
-        sig { params(lhs: BoolExpr, rhs: BoolExpr).returns(Or) }
+        sig { params(lhs: Root, rhs: Root).returns(Or) }
         def or(lhs, rhs)
           Or.new(lhs: lhs, rhs: rhs)
         end
 
-        sig { params(expr: BoolExpr).returns(Not) }
+        sig { params(expr: Root).returns(Not) }
         def not(expr)
           Not.new(expr: expr)
         end

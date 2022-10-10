@@ -12,7 +12,7 @@ module FQL
         ).returns(T::Boolean)
       end
 
-      sig { params(expr: Query::DSL::BoolExpr, library: Library).returns(CompiledFunction) }
+      sig { params(expr: Query::DSL::Root, library: Library).returns(CompiledFunction) }
       def self.compile(expr, library:)
         code = "proc { |__itself__, __fql_vars__| #{compile_expression(expr, library)} }"
         RubyVM::InstructionSequence.compile(code).eval
@@ -20,8 +20,7 @@ module FQL
 
       sig do
         params(
-          expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr, NilClass,
-                      T::Array[Query::DSL::Primitive]),
+          expr: T.any(Query::DSL::Expr, NilClass, T::Array[Query::DSL::Primitive]),
           lib: Library
         ).returns(String)
       end
@@ -39,12 +38,12 @@ module FQL
           "Date.parse(\"#{expr}\")"
         when Query::DSL::And
           "(#{compile_expression(T.let(expr.lhs,
-                                       Query::DSL::BoolExpr), lib)} && #{compile_expression(T.let(expr.rhs, Query::DSL::BoolExpr), lib)})"
+                                       Query::DSL::Root), lib)} && #{compile_expression(T.let(expr.rhs, Query::DSL::Root), lib)})"
         when Query::DSL::Or
           "(#{compile_expression(T.let(expr.lhs,
-                                       Query::DSL::BoolExpr), lib)} || #{compile_expression(T.let(expr.rhs, Query::DSL::BoolExpr), lib)})"
+                                       Query::DSL::Root), lib)} || #{compile_expression(T.let(expr.rhs, Query::DSL::Root), lib)})"
         when Query::DSL::Not
-          "!#{compile_expression(T.let(expr.expr, Query::DSL::BoolExpr), lib)}"
+          "!#{compile_expression(T.let(expr.expr, Query::DSL::Root), lib)}"
         when Query::DSL::Gt, Query::DSL::Gte, Query::DSL::Lt, Query::DSL::Lte
           operator = case expr
                      when Query::DSL::Gt then ">"

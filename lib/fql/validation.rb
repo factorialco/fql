@@ -16,11 +16,12 @@ module FQL
       end
     end
 
+    sig { params(model: T.class_of(ActiveRecord::Base), expr: Query::DSL::Root, library: Library).returns(Result) }
     def self.validate(model, expr, library: Library.empty)
       new(model, expr, library: library).validate
     end
 
-    sig { params(model: T.class_of(ActiveRecord::Base), expr: Query::DSL::BoolExpr, library: Library).void }
+    sig { params(model: T.class_of(ActiveRecord::Base), expr: Query::DSL::Root, library: Library).void }
     def initialize(model, expr, library: Library.empty)
       @model = model
       @expr = expr
@@ -37,8 +38,7 @@ module FQL
     private
 
     sig do
-      params(expr: T.nilable(T.any(Query::DSL::BoolExpr,
-                                   Query::DSL::ValueExpr))).returns(T.nilable(T.class_of(ActiveRecord::Base)))
+      params(expr: T.nilable(Query::DSL::Expr)).returns(T.nilable(T.class_of(ActiveRecord::Base)))
     end
     def validate_expression!(expr)
       case expr
@@ -94,7 +94,7 @@ module FQL
     sig { returns(T.class_of(ActiveRecord::Base)) }
     attr_reader :model
 
-    sig { returns(Query::DSL::BoolExpr) }
+    sig { returns(Query::DSL::Root) }
     attr_reader :expr
 
     sig { returns(T::Array[String]) }

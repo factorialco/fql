@@ -23,7 +23,7 @@ module FQL
       sig do
         params(
           model: T.class_of(ActiveRecord::Base),
-          expr: Query::DSL::BoolExpr,
+          expr: Query::DSL::Root,
           vars: T::Hash[Symbol, T.untyped],
           library: Library
         ).returns(ActiveRecord::Relation)
@@ -32,7 +32,7 @@ module FQL
         new(model, vars: vars, library: library).compile(expr)
       end
 
-      sig { params(expr: T.any(Query::DSL::BoolExpr, Query::DSL::Call)).returns(ActiveRecord::Relation) }
+      sig { params(expr: Query::DSL::Root).returns(ActiveRecord::Relation) }
       def compile(expr)
         where_clause = compile_expression(expr)
         joins.reduce(model) do |acc, join|
@@ -42,8 +42,7 @@ module FQL
 
       sig do
         params(
-          expr: T.any(Query::DSL::BoolExpr,
-                      Query::DSL::ValueExpr, NilClass, T::Array[Query::DSL::Primitive])
+          expr: T.any(Query::DSL::Expr, NilClass, T::Array[Query::DSL::Primitive])
         ).returns(T.any(A::Node, PlainValue, Table, Attribute))
       end
       def compile_expression(expr)

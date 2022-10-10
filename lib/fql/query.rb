@@ -49,12 +49,12 @@ module FQL
       Validation.validate(model, expr, library: library)
     end
 
-    sig { params(another_expr: DSL::BoolExpr).returns(Query) }
+    sig { params(another_expr: DSL::Root).returns(Query) }
     def and(another_expr)
       self.class.new(DSL::And.new(lhs: expr, rhs: another_expr))
     end
 
-    sig { params(another_expr: DSL::BoolExpr).returns(Query) }
+    sig { params(another_expr: DSL::Root).returns(Query) }
     def or(another_expr)
       self.class.new(DSL::Or.new(lhs: expr, rhs: another_expr))
     end

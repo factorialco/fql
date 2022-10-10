@@ -5,14 +5,14 @@ module FQL
     class Words
       extend T::Sig
 
-      sig { params(expr: Query::DSL::BoolExpr, suffix: T.nilable(String), library: Library).returns(String) }
+      sig { params(expr: Query::DSL::Root, suffix: T.nilable(String), library: Library).returns(String) }
       def self.compile(expr, suffix: nil, library: Library.empty)
         compile_expression(expr, negated: false, suffix: suffix, library: library)
       end
 
       sig do
         params(
-          expr: T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr),
+          expr: T.any(Query::DSL::Root, Query::DSL::ValueExpr),
           negated: T::Boolean,
           suffix: T.nilable(String),
           library: Library

@@ -8,19 +8,19 @@ module FQL
       extend T::Sig
       extend T::Generic
 
-      sig { params(input: T::Hash[T.any(String, Symbol), T.untyped]).returns(Outcome[Query::DSL::BoolExpr]) }
+      sig { params(input: T::Hash[T.any(String, Symbol), T.untyped]).returns(Outcome[Query::DSL::Root]) }
       def deserialize(input)
-        parse_expression(input.deep_symbolize_keys).map { |parsed| T.cast(parsed, Query::DSL::BoolExpr) }
+        parse_expression(input.deep_symbolize_keys).map { |parsed| T.cast(parsed, Query::DSL::Root) }
       end
 
-      sig { params(expr: Query::DSL::BoolExpr).returns(T::Hash[Symbol, T.untyped]) }
+      sig { params(expr: Query::DSL::Root).returns(T::Hash[Symbol, T.untyped]) }
       def serialize(expr)
         T.cast(serialize_expression(expr), T::Hash[Symbol, T.untyped])
       end
 
       sig do
         params(
-          expr: T.nilable(T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr))
+          expr: T.nilable(Query::DSL::Expr)
         ).returns(
           T.any(
             T::Hash[Symbol, T.untyped],
@@ -79,8 +79,7 @@ module FQL
 
       sig do
         params(expr: T.any(T::Hash[Symbol, T.untyped], T::Boolean, Integer, String,
-                           Date, NilClass)).returns(Outcome[T.any(Query::DSL::BoolExpr, Query::DSL::ValueExpr,
-                                                                  NilClass)])
+                           Date, NilClass)).returns(Outcome[T.any(Query::DSL::Expr, NilClass)])
       end
       def parse_expression(expr)
         if expr.is_a?(Hash) && expr.key?(:op)
@@ -88,8 +87,8 @@ module FQL
           when "and"
             parse_expression(expr[:lhs]).bind do |lhs|
               parse_expression(expr[:rhs]).map do |rhs|
-                lhs = T.cast(lhs, Query::DSL::BoolExpr)
-                rhs = T.cast(rhs, Query::DSL::BoolExpr)
+                lhs = T.cast(lhs, Query::DSL::Root)
+                rhs = T.cast(rhs, Query::DSL::Root)
                 Query::DSL::And.new(lhs: lhs, rhs: rhs, metadata: expr.fetch(:metadata, {}))
               end
             end
@@ -104,14 +103,14 @@ module FQL
           when "or"
             parse_expression(expr[:lhs]).bind do |lhs|
               parse_expression(expr[:rhs]).map do |rhs|
-                lhs = T.cast(lhs, Query::DSL::BoolExpr)
-                rhs = T.cast(rhs, Query::DSL::BoolExpr)
+                lhs = T.cast(lhs, Query::DSL::Root)
+                rhs = T.cast(rhs, Query::DSL::Root)
                 Query::DSL::Or.new(lhs: lhs, rhs: rhs, metadata: expr.fetch(:metadata, {}))
               end
             end
           when "not"
             parse_expression(expr[:expr]).map do |expression|
-              expression = T.cast(expression, Query::DSL::BoolExpr)
+              expression = T.cast(expression, Query::DSL::Root)
               Query::DSL::Not.new(expr: expression, metadata: expr.fetch(:metadata, {}))
             end
           when "gt", "gte", "lt", "lte"
