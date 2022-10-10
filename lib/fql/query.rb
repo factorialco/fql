@@ -6,7 +6,7 @@ module FQL
   class Query
     extend T::Sig
 
-    sig { params(expr: DSL::BoolExpr, library: Library).void }
+    sig { params(expr: DSL::Root, library: Library).void }
     def initialize(expr, library: Library.empty)
       @expr = expr
       @library = library
@@ -64,7 +64,7 @@ module FQL
       self.class.new(DSL::Not.new(expr: expr))
     end
 
-    sig { returns(DSL::BoolExpr) }
+    sig { returns(DSL::Root) }
     attr_reader :expr
 
     private
