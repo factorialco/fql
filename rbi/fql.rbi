@@ -1,6 +1,6 @@
 # typed: strong
 module FQL
-  VERSION = "0.2.0".freeze
+  VERSION = "0.2.1".freeze
 
   class Library
     extend T::Sig
@@ -267,110 +267,120 @@ module FQL
       ValueExpr = T.type_alias { T.any(Attr, Rel, Var, Call, Primitive, T::Array[Primitive]) }
       Expr = T.type_alias { T.any(BoolExpr, ValueExpr) }
 
+      module Node
+        extend T::Sig
+
+        sig { params(base: Module).void }
+        def self.included(base); end
+      end
+
       class And < T::Struct
         prop :lhs, T.untyped, immutable: true
         prop :rhs, T.untyped, immutable: true
 
-        include T::Struct::ActsAsComparable
+        include Node
       end
 
       class Or < T::Struct
         prop :lhs, T.untyped, immutable: true
         prop :rhs, T.untyped, immutable: true
 
-        include T::Struct::ActsAsComparable
+        include Node
       end
 
       class Not < T::Struct
         prop :expr, T.untyped, immutable: true
 
-        include T::Struct::ActsAsComparable
+        include Node
       end
 
       class Rel < T::Struct
         prop :name, T::Array[Symbol], immutable: true
 
-        include T::Struct::ActsAsComparable
+        include Node
       end
 
       class Attr < T::Struct
         prop :target, Rel, immutable: true
         prop :name, Symbol, immutable: true
 
-        include T::Struct::ActsAsComparable
+        include Node
       end
 
       class Var < T::Struct
         prop :name, Symbol, immutable: true
 
-        include T::Struct::ActsAsComparable
+        include Node
       end
 
       class Call < T::Struct
         prop :name, Symbol, immutable: true
         prop :arguments, T::Array[T.untyped], immutable: true
 
-        include T::Struct::ActsAsComparable
+        include Node
       end
 
       class Eq < T::Struct
         prop :lhs, ValueExpr, immutable: true
         prop :rhs, T.any(ValueExpr, NilClass), immutable: true
 
-        include T::Struct::ActsAsComparable
+        include Node
       end
 
       class Gt < T::Struct
         prop :lhs, ValueExpr, immutable: true
         prop :rhs, ValueExpr, immutable: true
 
-        include T::Struct::ActsAsComparable
+        include Node
       end
 
       class Lt < T::Struct
         prop :lhs, ValueExpr, immutable: true
         prop :rhs, ValueExpr, immutable: true
 
-        include T::Struct::ActsAsComparable
+        include Node
       end
 
       class Gte < T::Struct
         prop :lhs, ValueExpr, immutable: true
         prop :rhs, ValueExpr, immutable: true
 
-        include T::Struct::ActsAsComparable
+        include Node
       end
 
       class Lte < T::Struct
         prop :lhs, ValueExpr, immutable: true
         prop :rhs, ValueExpr, immutable: true
 
-        include T::Struct::ActsAsComparable
+        include Node
       end
 
       class OneOf < T::Struct
         prop :member, ValueExpr, immutable: true
         prop :set, T::Array[Primitive], immutable: true
 
-        include T::Struct::ActsAsComparable
+        include Node
       end
 
       class Contains < T::Struct
         prop :lhs, ValueExpr, immutable: true
         prop :rhs, String, immutable: true
 
-        include T::Struct::ActsAsComparable
+        include Node
       end
 
       class MatchesRegex < T::Struct
         prop :lhs, ValueExpr, immutable: true
         prop :rhs, String, immutable: true
 
-        include T::Struct::ActsAsComparable
+        include Node
       end
 
       module Methods
         extend T::Sig
+
+        sig { type_parameters(:T).params(metadata: T::Hash[Symbol, T.untyped], node: T.all(T.type_parameter(:T), Node)).returns(T.type_parameter(:T)) }
+        def with_meta(metadata, node); end
 
         sig { params(lhs: BoolExpr, rhs: BoolExpr).returns(And) }
         def and(lhs, rhs); end

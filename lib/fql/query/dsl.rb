@@ -7,22 +7,32 @@ module FQL
     module DSL
       extend T::Sig
 
+      module Node
+        extend T::Sig
+
+        sig { params(base: Module).void }
+        def self.included(base)
+          base.include T::Struct::ActsAsComparable
+          base.const :metadata, T::Hash[Symbol, T.untyped], default: {}
+        end
+      end
+
       class And < T::Struct
-        include T::Struct::ActsAsComparable
+        include Node
 
         const :lhs, T.untyped # BoolExpr, but Sorbet can't do recursive type aliases
         const :rhs, T.untyped # BoolExpr, but Sorbet can't do recursive type aliases
       end
 
       class Or < T::Struct
-        include T::Struct::ActsAsComparable
+        include Node
 
         const :lhs, T.untyped # BoolExpr, but Sorbet can't do recursive type aliases
         const :rhs, T.untyped # BoolExpr, but Sorbet can't do recursive type aliases
       end
 
       class Not < T::Struct
-        include T::Struct::ActsAsComparable
+        include Node
 
         const :expr, T.untyped # BoolExpr, but Sorbet can't do recursive type aliases
       end
@@ -30,14 +40,14 @@ module FQL
       # Resolve a relation.
       # The special relation named `:self` resolves to the root entity.
       class Rel < T::Struct
-        include T::Struct::ActsAsComparable
+        include Node
 
         const :name, T::Array[Symbol]
       end
 
       # Resolve an attribute of a relation.
       class Attr < T::Struct
-        include T::Struct::ActsAsComparable
+        include Node
 
         const :target, Rel
         const :name, Symbol
@@ -45,14 +55,14 @@ module FQL
 
       # Resolve a variable at runtime that will be passed to the interpreter.
       class Var < T::Struct
-        include T::Struct::ActsAsComparable
+        include Node
 
         const :name, Symbol
       end
 
       # Resolve a variable at runtime that will be passed to the interpreter.
       class Call < T::Struct
-        include T::Struct::ActsAsComparable
+        include Node
 
         const :name, Symbol
         const :arguments, T::Array[T.untyped]
@@ -66,56 +76,56 @@ module FQL
 
       # Determine equality between two values.
       class Eq < T::Struct
-        include T::Struct::ActsAsComparable
+        include Node
 
         const :lhs, ValueExpr
         const :rhs, T.any(ValueExpr, NilClass)
       end
 
       class Gt < T::Struct
-        include T::Struct::ActsAsComparable
+        include Node
 
         const :lhs, ValueExpr
         const :rhs, ValueExpr
       end
 
       class Lt < T::Struct
-        include T::Struct::ActsAsComparable
+        include Node
 
         const :lhs, ValueExpr
         const :rhs, ValueExpr
       end
 
       class Gte < T::Struct
-        include T::Struct::ActsAsComparable
+        include Node
 
         const :lhs, ValueExpr
         const :rhs, ValueExpr
       end
 
       class Lte < T::Struct
-        include T::Struct::ActsAsComparable
+        include Node
 
         const :lhs, ValueExpr
         const :rhs, ValueExpr
       end
 
       class OneOf < T::Struct
-        include T::Struct::ActsAsComparable
+        include Node
 
         const :member, ValueExpr
         const :set, T::Array[Primitive]
       end
 
       class Contains < T::Struct
-        include T::Struct::ActsAsComparable
+        include Node
 
         const :lhs, ValueExpr
         const :rhs, String
       end
 
       class MatchesRegex < T::Struct
-        include T::Struct::ActsAsComparable
+        include Node
 
         const :lhs, ValueExpr
         const :rhs, String
@@ -123,6 +133,18 @@ module FQL
 
       module Methods
         extend T::Sig
+
+        sig do
+          type_parameters(:T)
+            .params(
+              metadata: T::Hash[Symbol, T.untyped],
+              node: T.all(T.type_parameter(:T), Node)
+            )
+            .returns(T.type_parameter(:T))
+        end
+        def with_meta(metadata, node)
+          node.tap { |n| n.metadata.merge!(metadata) }
+        end
 
         sig { params(lhs: BoolExpr, rhs: BoolExpr).returns(And) }
         def and(lhs, rhs)

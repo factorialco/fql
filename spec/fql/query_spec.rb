@@ -30,4 +30,17 @@ RSpec.describe FQL::Query do
       expect(result).to eq(F.not(expression))
     end
   end
+
+  describe "metadata" do
+    let(:expression) do
+      F.eq(
+        F.with_meta({ name: "the user id" }, F.var(:foo)),
+        3
+      )
+    end
+
+    it "can be attached to an arbitrary node" do
+      expect(expression.lhs.metadata).to eq(name: "the user id")
+    end
+  end
 end
