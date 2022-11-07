@@ -74,7 +74,7 @@ module FQL
 
       Expr = T.type_alias { T.any(BoolExpr, ValueExpr) }
 
-      Root = T.type_alias { T.any(BoolExpr, Call) }
+      Root = T.type_alias { T.any(BoolExpr, ValueExpr) }
 
       # Determine equality between two values.
       class Eq < T::Struct
