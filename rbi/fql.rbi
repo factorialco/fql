@@ -1,6 +1,6 @@
 # typed: strong
 module FQL
-  VERSION = "0.2.5".freeze
+  VERSION = "0.2.6".freeze
 
   class Library
     extend T::Sig
@@ -382,7 +382,7 @@ module FQL
         sig { params(lhs: Root, rhs: Root).returns(And) }
         def and(lhs, rhs); end
 
-        sig { params(lhs: Root, rhs: Root).returns(Or) }
+        sig { params(lhs: Expr, rhs: Expr).returns(Or) }
         def or(lhs, rhs); end
 
         sig { params(expr: Root).returns(Not) }

@@ -153,7 +153,7 @@ module FQL
           And.new(lhs: lhs, rhs: rhs)
         end
 
-        sig { params(lhs: Root, rhs: Root).returns(Or) }
+        sig { params(lhs: Expr, rhs: Expr).returns(Or) }
         def or(lhs, rhs)
           Or.new(lhs: lhs, rhs: rhs)
         end

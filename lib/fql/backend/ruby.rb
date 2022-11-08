@@ -1,5 +1,4 @@
 # typed: strict
-
 module FQL
   module Backend
     module Ruby
@@ -57,7 +56,12 @@ module FQL
 
           "(#{lhs} #{operator} #{rhs})"
         when Query::DSL::Eq
-          "(#{compile_expression(expr.lhs, lib)} == #{compile_expression(expr.rhs, lib)})"
+          rhs = compile_expression(expr.rhs, lib)
+          if rhs.start_with?('[')
+            "(#{rhs}.include?(#{compile_expression(expr.lhs, lib)}))"
+          else
+            "(#{compile_expression(expr.lhs, lib)} == #{rhs})"
+          end
         when Query::DSL::OneOf
           "#{compile_expression(expr.set, lib)}.include?(#{compile_expression(expr.member, lib)})"
         when Query::DSL::Contains

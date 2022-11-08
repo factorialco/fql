@@ -170,6 +170,10 @@ RSpec.describe FQL::Backend::Arel do
         expect(F.eq(F.call(:country), "fr")).to compile_to('SELECT DISTINCT "users".* FROM "users" INNER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" = \'fr\'')
       end
 
+      it "can call a simple function with array" do
+        expect(F.eq(F.call(:country), F.call(:echo, ["fr", "EN"]))).to compile_to('SELECT DISTINCT "users".* FROM "users" INNER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" IN (\'fr\', \'EN\')')
+      end
+
       it "can call a parameterized function from the library" do
         expect(F.eq(F.call(:country), F.call(:echo, "fr"))).to compile_to('SELECT DISTINCT "users".* FROM "users" INNER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" = \'fr\'')
       end

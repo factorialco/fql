@@ -1,6 +1,5 @@
 # typed: strict
 require "active_record"
-
 module FQL
   module Backend
     class Arel
@@ -53,7 +52,7 @@ module FQL
           nil
         when Integer, String, Date
           expr
-        when Array
+        when Array                                                                                                                                             
           expr.map { |e| compile_expression(e) }
         when Query::DSL::And
           T.cast(compile_expression(expr.lhs), A::Node).and(T.cast(compile_expression(expr.rhs), A::Node))
@@ -62,7 +61,12 @@ module FQL
         when Query::DSL::Not
           T.cast(compile_expression(expr.expr), A::Node).not
         when Query::DSL::Eq
-          T.cast(compile_expression(expr.lhs), Attribute).eq(compile_expression(expr.rhs))
+          rhs = compile_expression(expr.rhs)
+          if rhs.is_a?(Array)
+            T.cast(compile_expression(expr.lhs), Attribute).in(rhs)
+          else
+            T.cast(compile_expression(expr.lhs), Attribute).eq(rhs) 
+          end
         when Query::DSL::Gt
           T.cast(compile_expression(expr.lhs), Attribute).gt(compile_expression(expr.rhs))
         when Query::DSL::Gte

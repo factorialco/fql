@@ -91,6 +91,10 @@ RSpec.describe FQL::Backend::Ruby do
       it "accepts nil on the right hand side" do
         expect(F.eq(true, nil)).to compile_to("(true == nil)")
       end
+
+      it "accepts nil on the right hand side" do
+        expect(F.eq(true, [1, 2])).to compile_to("([1, 2].include?(true))")
+      end
     end
 
     describe "Gt" do
