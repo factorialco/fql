@@ -113,10 +113,10 @@ module FQL
       def valid?; end
     end
 
-    sig { params(model: T.class_of(ActiveRecord::Base), expr: Query::DSL::Root, library: Library).returns(Result) }
+    sig { params(model: T.class_of(ActiveRecord::Base), expr: Query::DSL::Expr, library: Library).returns(Result) }
     def self.validate(model, expr, library: Library.empty); end
 
-    sig { params(model: T.class_of(ActiveRecord::Base), expr: Query::DSL::Root, library: Library).void }
+    sig { params(model: T.class_of(ActiveRecord::Base), expr: Query::DSL::Expr, library: Library).void }
     def initialize(model, expr, library: Library.empty); end
 
     sig { returns(Result) }
@@ -128,7 +128,7 @@ module FQL
     sig { returns(T.class_of(ActiveRecord::Base)) }
     attr_reader :model
 
-    sig { returns(Query::DSL::Root) }
+    sig { returns(Query::DSL::Expr) }
     attr_reader :expr
 
     sig { returns(T::Array[String]) }
@@ -219,7 +219,7 @@ module FQL
   class Query
     extend T::Sig
 
-    sig { params(expr: DSL::Root, library: Library).void }
+    sig { params(expr: DSL::Expr, library: Library).void }
     def initialize(expr, library: Library.empty); end
 
     sig { params(input: T::Hash[T.any(String, Symbol), T.untyped]).returns(Outcome[T.attached_class]) }
@@ -243,13 +243,13 @@ module FQL
     sig { params(another_expr: DSL::Root).returns(Query) }
     def and(another_expr); end
 
-    sig { params(another_expr: DSL::Root).returns(Query) }
+    sig { params(another_expr: DSL::Expr).returns(Query) }
     def or(another_expr); end
 
     sig { returns(Query) }
     def not; end
 
-    sig { returns(DSL::Root) }
+    sig { returns(DSL::Expr) }
     attr_reader :expr
 
     sig { returns(Library) }
