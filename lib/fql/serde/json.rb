@@ -79,7 +79,7 @@ module FQL
 
       sig do
         params(expr: T.any(T::Hash[Symbol, T.untyped], T::Boolean, Integer, String,
-                           Date, NilClass)).returns(Outcome[T.any(Query::DSL::Expr, NilClass)])
+                           Date, NilClass, T::Array[T.untyped])).returns(Outcome[T.any(Query::DSL::Expr, NilClass)])
       end
       def parse_expression(expr)
         if expr.is_a?(Hash) && expr.key?(:op)
@@ -168,7 +168,7 @@ module FQL
           else
             Outcome.error("unrecognized op '#{expr[:op]}'")
           end
-        elsif expr.is_a?(Hash) || expr.is_a?(Array)
+        elsif expr.is_a?(Hash)
           # it's a primitive value
           Outcome.error("can't parse expression: #{expr}")
         else

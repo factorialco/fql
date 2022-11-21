@@ -64,6 +64,10 @@ RSpec.describe FQL::Serde::JSON do
     expect(F.lte(F.call(:my_name), F.var(:number))).to roundtrip
   end
 
+  it "roundtrips Call with an array argument" do
+    expect(F.eq(F.call(:echo, [1, 2]), [1, 2])).to roundtrip
+  end
+
   it "roundtrips OneOf" do
     expect(F.one_of(F.attr(F.rel(:self), :name), %w[hello goodbye])).to roundtrip
   end
