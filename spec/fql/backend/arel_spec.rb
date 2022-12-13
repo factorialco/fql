@@ -121,7 +121,7 @@ RSpec.describe FQL::Backend::Arel do
 
       context "when the name does not refer to self" do
         it "compiles to a join query" do
-          expect(F.eq(F.attr(F.rel(:address), :country), "es")).to compile_to('SELECT DISTINCT "users".* FROM "users" INNER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" = \'es\'')
+          expect(F.eq(F.attr(F.rel(:address), :country), "es")).to compile_to('SELECT DISTINCT "users".* FROM "users" LEFT OUTER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" = \'es\'')
         end
       end
 
@@ -138,8 +138,8 @@ RSpec.describe FQL::Backend::Arel do
           ).to compile_to(
             [
               'SELECT DISTINCT "users".* FROM "users"',
-              'INNER JOIN addresses "address" ON "users"."id" = "address"."tenant_id"',
-              'INNER JOIN cities "city" ON "address"."city_id" = "city"."id"',
+              'LEFT OUTER JOIN addresses "address" ON "users"."id" = "address"."tenant_id"',
+              'LEFT OUTER JOIN cities "city" ON "address"."city_id" = "city"."id"',
               'WHERE "city"."name" = \'Barcelona\''
             ].join(" ")
           )
@@ -151,7 +151,7 @@ RSpec.describe FQL::Backend::Arel do
       subject { described_class.new(User, vars: { country: "fr" }, library: library) }
 
       it "lookups up a variable at compile time" do
-        expect(F.eq(F.attr(F.rel(:address), :country), F.var(:country))).to compile_to('SELECT DISTINCT "users".* FROM "users" INNER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" = \'fr\'')
+        expect(F.eq(F.attr(F.rel(:address), :country), F.var(:country))).to compile_to('SELECT DISTINCT "users".* FROM "users" LEFT OUTER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" = \'fr\'')
       end
 
       context "when the variable does not exist at compile time" do
@@ -167,15 +167,15 @@ RSpec.describe FQL::Backend::Arel do
       subject { described_class.new(User, vars: {}, library: library) }
 
       it "can call a simple function from the library" do
-        expect(F.eq(F.call(:country), "fr")).to compile_to('SELECT DISTINCT "users".* FROM "users" INNER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" = \'fr\'')
+        expect(F.eq(F.call(:country), "fr")).to compile_to('SELECT DISTINCT "users".* FROM "users" LEFT OUTER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" = \'fr\'')
       end
 
       it "can call a simple function with array" do
-        expect(F.eq(F.call(:country), F.call(:echo, ["fr", "EN"]))).to compile_to('SELECT DISTINCT "users".* FROM "users" INNER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" IN (\'fr\', \'EN\')')
+        expect(F.eq(F.call(:country), F.call(:echo, ["fr", "EN"]))).to compile_to('SELECT DISTINCT "users".* FROM "users" LEFT OUTER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" IN (\'fr\', \'EN\')')
       end
 
       it "can call a parameterized function from the library" do
-        expect(F.eq(F.call(:country), F.call(:echo, "fr"))).to compile_to('SELECT DISTINCT "users".* FROM "users" INNER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" = \'fr\'')
+        expect(F.eq(F.call(:country), F.call(:echo, "fr"))).to compile_to('SELECT DISTINCT "users".* FROM "users" LEFT OUTER JOIN addresses "address" ON "users"."id" = "address"."tenant_id" WHERE "address"."country" = \'fr\'')
       end
 
       it "can call a parameterized boolean function from the library" do

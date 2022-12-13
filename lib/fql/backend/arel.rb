@@ -95,7 +95,7 @@ module FQL
               {
                 joins: state[:joins] + [
                   arel_table
-                                       .join(new_aliased_relation)
+                                       .join(new_aliased_relation, ::Arel::Nodes::OuterJoin)
                                        .on(
                                          (state[:aliased_relation] || arel_table)[assoc.join_foreign_key]
                                             .eq(new_aliased_relation[assoc.join_primary_key])
