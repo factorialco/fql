@@ -17,9 +17,19 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set up Ruby 2.7
-      uses: actions/setup-ruby@v1
+      uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 2.7
+        bundler-cache: true # runs 'bundle install' and caches installed gems automatically
+
+    - name: Run tests
+      run: bundle exec rspec -f j -o tmp/rspec_results.json -f p
+
+    - name: RSpec Report
+      uses: SonicGarden/rspec-report-action@v2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        json-path: tmp/rspec_results.json
+      if: always()
 
     - name: Publish to GPR
       run: |
