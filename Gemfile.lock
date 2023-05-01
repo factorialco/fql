@@ -64,11 +64,10 @@ GEM
       rb-inotify (~> 0.9, >= 0.9.10)
     lumberjack (1.2.8)
     method_source (1.0.0)
-    mini_portile2 (2.7.1)
+    mini_portile2 (2.8.2)
     minitest (5.16.3)
     nenv (0.3.0)
-    nokogiri (1.13.1)
-      mini_portile2 (~> 2.7.0)
+    nokogiri (1.13.1-x86_64-linux)
       racc (~> 1.4)
     notiffany (0.1.3)
       nenv (~> 0.1)
@@ -175,14 +174,15 @@ GEM
       sorbet-coerce (>= 0.2.6)
       sorbet-runtime (>= 0.5.9892)
     sorbet-runtime (0.5.10481)
-    sorbet-static (0.5.9531-universal-darwin-14)
+    sorbet-static (0.5.9531-x86_64-linux)
     sorbet-struct-comparable (1.3.0)
       sorbet-runtime (>= 0.5)
     spoom (1.1.12)
       sorbet (>= 0.5.9204)
       sorbet-runtime (>= 0.5.9204)
       thor (>= 0.19.2)
-    sqlite3 (1.4.2)
+    sqlite3 (1.6.2)
+      mini_portile2 (~> 2.8.0)
     tapioca (0.7.3)
       bundler (>= 1.17.3)
       pry (>= 0.12.2)
@@ -209,7 +209,7 @@ GEM
     zeitwerk (2.6.6)
 
 PLATFORMS
-  ruby
+  x86_64-linux
 
 DEPENDENCIES
   byebug
