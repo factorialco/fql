@@ -1,6 +1,6 @@
 # typed: strong
 module FQL
-  VERSION = "0.2.6".freeze
+  VERSION = "0.2.12".freeze
 
   class Library
     extend T::Sig
@@ -95,7 +95,7 @@ module FQL
       def serialize_expression(expr); end
 
       sig { params(expr: T.any(T::Hash[Symbol, T.untyped], T::Boolean, Integer, String,
-                           Date, NilClass)).returns(Outcome[T.any(Query::DSL::Expr, NilClass)]) }
+                           Date, NilClass, T::Array[T.untyped])).returns(Outcome[T.any(Query::DSL::Expr, NilClass)]) }
       def parse_expression(expr); end
     end
   end
@@ -222,8 +222,8 @@ module FQL
     sig { params(expr: DSL::Root, library: Library).void }
     def initialize(expr, library: Library.empty); end
 
-    sig { params(input: T::Hash[T.any(String, Symbol), T.untyped]).returns(Outcome[T.attached_class]) }
-    def self.from_json(input); end
+    sig { params(input: T::Hash[T.any(String, Symbol), T.untyped], library: Library).returns(Outcome[T.attached_class]) }
+    def self.from_json(input, library: Library.empty); end
 
     sig { returns(Backend::Ruby::CompiledFunction) }
     def to_ruby; end

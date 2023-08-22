@@ -15,7 +15,7 @@ module FQL
     sig { params(input: T::Hash[T.any(String, Symbol), T.untyped], library: Library).returns(Outcome[T.attached_class]) }
     def self.from_json(input, library: Library.empty)
       Serde::JSON.new.deserialize(input).map do |parsed|
-        new(parsed, library)
+        new(parsed, library: library)
       end
     end
 
