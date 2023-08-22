@@ -54,6 +54,7 @@ class TestUserLibrary < FQL::Library
     F.eq(a, b)
   end
 end
+
 class TestUserLibrary < FQL::Library
   function(:country) do
     F.attr(F.rel(:address), :country)
