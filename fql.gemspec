@@ -21,7 +21,6 @@ Gem::Specification.new do |spec|
 
   spec.add_runtime_dependency "activerecord", "~> 7.0"
   spec.add_runtime_dependency "i18n", "~> 1.8"
-  spec.add_runtime_dependency "sorbet-rails", "~> 0.7.3"
   spec.add_runtime_dependency "sorbet-runtime", "~> 0.5"
   spec.add_runtime_dependency "sorbet-struct-comparable", "~> 1.3.0"
   spec.add_runtime_dependency "zeitwerk", "~> 2.4"
